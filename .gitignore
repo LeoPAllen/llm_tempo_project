@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 venv
 staticfiles
 ./db.sqlite3
@@ -187,4 +187,4 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
->>>>>>> 44b038388f75785faca317e29ba2ac08a81e66f6
+
