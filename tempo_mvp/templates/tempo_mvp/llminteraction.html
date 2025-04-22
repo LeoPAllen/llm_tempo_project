@@ -1,0 +1,94 @@
+{% block content %}
+  <p><strong>Debug:</strong> treatment = <span id="debug-treatment">loading...</span></p>
+
+  <textarea id="user-input" rows="3" cols="60" placeholder="Type your prompt here..."></textarea><br>
+  <button type="button" id="submit-btn">Submit</button>
+
+  <div id="conversation" style="margin-top: 20px;"></div>
+
+  {{ formfields }}
+  {{ next_button }}
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const treatment = js_vars?.treatment || "undefined";
+
+      console.log("✅ Treatment:", treatment);
+      const debugSpan = document.getElementById("debug-treatment");
+      if (debugSpan) {
+        debugSpan.textContent = treatment;
+      }
+
+      const submitBtn = document.getElementById("submit-btn");
+      const inputField = document.getElementById("user-input");
+      const conversationDiv = document.getElementById("conversation");
+      const formField = document.querySelector('[name="io_history"]');
+      const nextBtn = document.querySelector('button[type="submit"]');
+
+      let history = [];
+      let isStreaming = false;
+
+      function disableNext(disabled) {
+        if (nextBtn) {
+          nextBtn.disabled = disabled;
+          nextBtn.style.opacity = disabled ? "0.5" : "1";
+        }
+      }
+
+      submitBtn.onclick = function () {
+        const input = inputField.value.trim();
+        if (!input || isStreaming) return;
+        disableNext(true);  // ✅ immediately disable Next when streaming begins
+        liveSend({ input: input });
+        inputField.value = '';
+      };
+
+      liveRecv = async function (data) {
+        isStreaming = true;
+
+        const userInput = data.input;
+        const fullResponse = data.output;
+
+        const userLine = document.createElement('p');
+        userLine.innerHTML = `<strong>You:</strong> ${userInput}`;
+        conversationDiv.appendChild(userLine);
+
+        const assistantLine = document.createElement('p');
+        assistantLine.innerHTML = `<strong>Assistant:</strong> `;
+        conversationDiv.appendChild(assistantLine);
+
+        const words = fullResponse.split(' ');
+
+        // ✅ Change this value to control n-gram size
+        const ngramSize = 3;
+
+        const ngrams = [];
+        for (let i = 0; i < words.length; i += ngramSize) {
+          const chunk = words.slice(i, i + ngramSize).join(' ');
+          ngrams.push(chunk);
+        }
+
+        const delay = treatment === 'ngram' ? 1000 : 0;
+
+        console.log("🌀 Streaming with delay:", delay, "ngrams:", ngramSize);
+
+        for (const chunk of ngrams) {
+          assistantLine.innerHTML += chunk + " ";
+          if (delay > 0) {
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
+        }
+
+        history.push({ input: userInput, output: fullResponse });
+        formField.value = JSON.stringify(history);
+
+        isStreaming = false;
+        disableNext(false);  // ✅ re-enable Next button when streaming ends
+      };
+    });
+  </script>
+{% endblock %}
+
+{% block js_vars %}
+  
+{% endblock %}
