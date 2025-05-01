@@ -26,7 +26,7 @@ class LLMInteraction(Page):
         user_input = data.get('input')
         # generate dummy output (10 words, made up of random letters)
         # this would be replaced with an LLM call
-        words = [''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=random.randint(3, 8))) for _ in range(10)]
+        words = [''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=random.randint(3, 8))) for _ in range(80)]
         output = ' '.join(words)
         return {self.id_in_group: dict(output=output, input=user_input)}
 

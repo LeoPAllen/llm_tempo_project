@@ -38,7 +38,7 @@
       submitBtn.onclick = function () {
         const input = inputField.value.trim();
         if (!input || isStreaming) return;
-        disableNext(true);  // ✅ immediately disable Next when streaming begins
+        disableNext(true);
         liveSend({ input: input });
         inputField.value = '';
       };
@@ -60,22 +60,47 @@
         const words = fullResponse.split(' ');
 
         // ✅ Change this value to control n-gram size
-        const ngramSize = 3;
-
+        const ngramSize = 1;
         const ngrams = [];
         for (let i = 0; i < words.length; i += ngramSize) {
           const chunk = words.slice(i, i + ngramSize).join(' ');
           ngrams.push(chunk);
         }
 
-        const delay = treatment === 'ngram' ? 1000 : 0;
+        // ✅ Treatment-dependent timing
+        let startDelay = 0;
+        let streamDelay = 0;
 
-        console.log("🌀 Streaming with delay:", delay, "ngrams:", ngramSize);
+        switch (treatment) {
+          case 'fast_start_fast_stream':
+            startDelay = 100;
+            streamDelay = 100;
+            break;
+          case 'fast_start_slow_stream':
+            startDelay = 100;
+            streamDelay = 500;
+            break;
+          case 'slow_start_fast_stream':
+            startDelay = 2000;
+            streamDelay = 100;
+            break;
+          case 'slow_start_slow_stream':
+            startDelay = 2000;
+            streamDelay = 500;
+            break;
+          default:
+            startDelay = 0;
+            streamDelay = 0;
+        }
+
+        console.log("🌀 Streaming with start delay:", startDelay, "ms and stream delay:", streamDelay, "ms");
+
+        await new Promise(resolve => setTimeout(resolve, startDelay));
 
         for (const chunk of ngrams) {
           assistantLine.innerHTML += chunk + " ";
-          if (delay > 0) {
-            await new Promise(resolve => setTimeout(resolve, delay));
+          if (streamDelay > 0) {
+            await new Promise(resolve => setTimeout(resolve, streamDelay));
           }
         }
 
@@ -83,7 +108,7 @@
         formField.value = JSON.stringify(history);
 
         isStreaming = false;
-        disableNext(false);  // ✅ re-enable Next button when streaming ends
+        disableNext(false);
       };
     });
   </script>

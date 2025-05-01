@@ -1,6 +1,14 @@
 from otree.api import *
 import random, json
 
+GLOBAL_TREAMTMENTS = [
+    'default',
+    'fast_start_fast_stream',
+    'fast_start_slow_stream',
+    'slow_start_slow_stream',
+    'slow_start_fast_stream',
+]
+
 
 class Constants(BaseConstants):
     name_in_url = 'tempo_mvp'
@@ -12,7 +20,7 @@ class Subsession(BaseSubsession):
     def creating_session(self):
         print("DEBUG: running creating_session")
         for p in self.get_players():
-            p.treatment = random.choice(['immediate', 'ngram'])
+            p.treatment = random.choice(GLOBAL_TREAMTMENTS)
             print(p.treatment)
             p.io_history = json.dumps([])
 
