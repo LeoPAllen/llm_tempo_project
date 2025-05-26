@@ -1,0 +1,15 @@
+{% extends "global/Page.html" %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+  <h2 class="text-xl font-bold mb-4">Instructions for Test Task</h2>
+  <p>In this task, you’ll see a prompt and the language model will begin streaming a response. You can:</p>
+  <ul class="list-disc list-inside my-2">
+    <li>Read the response as it appears word by word.</li>
+    <li>Click the “⎋ Interrupt” button at any time to stop the stream.</li>
+    <li>After the stream ends (or you interrupt), you’ll fill out a short survey.</li>
+  </ul>
+  <p>Click “Next” when you’re ready to begin the streaming task.</p>
+</div>
+{{ next_button }}
+{% endblock %}

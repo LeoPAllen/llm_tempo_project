@@ -1,0 +1,13 @@
+{% extends "global/Page.html" %}
+{% block content %}
+  <h3>Post-Task Survey</h3>
+  <p>Now that you’ve seen the LLM’s (possibly interrupted) answer, please rate:</p>
+
+  {{ formfields }}
+
+  {{ next_button }}
+{% endblock %}
+
+{% block js_vars %}
+  {{ super() }}
+{% endblock %}

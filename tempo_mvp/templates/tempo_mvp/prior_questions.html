@@ -1,0 +1,13 @@
+{% extends "global/Page.html" %}
+{% block content %}
+  <h3>Prior Beliefs</h3>
+  <p>Before any tasks, please answer these:</p>
+
+  {{ formfields }}
+
+  {{ next_button }}
+{% endblock %}
+
+{% block js_vars %}
+  {{ super() }}
+{% endblock %}

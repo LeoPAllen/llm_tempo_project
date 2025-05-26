@@ -1,46 +1,72 @@
-from otree.api import *
-import random
+from otree.api import Page
+from .models import Constants
+
+class PriorBeliefsPage(Page):
+    form_model = 'player'
+    form_fields = ['prior_belief_1']
+    template_name = 'tempo_mvp/prior_questions.html'
+
 
 class InstructionPage(Page):
-    def vars_for_template(self):
-        return dict(
-            task_description="Your job is to write a treatise on the positive benefits of tariffs "
-                "on the global economy (hint: there are essentially none), and to design a tariff "
-                "policy that realizes those benefits (hint: consider totally ignoring the "
-                "service economy, consider dividing by two, consider telling your friends to short SPY). Use a large language model "
-                "in any way you wish."
-        )
+    @property
+    def template_name(self):
+        seq = self.session.vars['task_sequence']
+        task = seq[self.round_number - 1]
+        print(f"[DEBUG] Round {self.round_number}, task: {task}")
+        return f'tempo_mvp/{task}/instructions.html'
 
 
-class LLMInteraction(Page):
+class StreamingTaskPage(Page):
+    """
+    Switch to LivePage and the @live_method decorator so oTree
+    wires up the WebSocket correctly.
+    """
     form_model = 'player'
-    form_fields = ['io_history']
+    form_fields = [
+        'io_history',
+        'interrupt_latency_submit',
+        'interrupt_latency_stream',
+    ]
 
-    def js_vars(self):
-        print("DEBUG js_vars():", self.player.treatment)
-        return dict(
-            treatment=self.player.treatment # Force inject to test
-        )
+    @property
+    def template_name(self):
+        return 'global/StreamingTask.html'
 
+    def vars_for_template(self):
+        return {'treatment': self.player.treatment}
+
+    @staticmethod
     def live_method(self, data):
         user_input = data.get('input')
-        # generate dummy output (10 words, made up of random letters)
-        # this would be replaced with an LLM call
-        words = [''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=random.randint(3, 8))) for _ in range(80)]
-        output = ' '.join(words)
-        return {self.id_in_group: dict(output=output, input=user_input)}
+        seq = self.session.vars['task_sequence']
+        idx = self.round_number - 1
+        task = seq[idx] if idx < len(seq) else None
+        full_output = Constants.task_texts.get(task, '')
+        return {self.id_in_group: dict(output=full_output, input=user_input)}
 
 
-class DVQuestions(Page):
+class PostTaskSurveyPage(Page):
     form_model = 'player'
-    form_fields = ['perceived_accuracy', 'delegate_future']
+
+    @property
+    def template_name(self):
+        seq = self.session.vars['task_sequence']
+        task = seq[self.round_number - 1]
+        return f'tempo_mvp/{task}/post_survey.html'
+
+    def get_form_fields(self):
+        seq = self.session.vars['task_sequence']
+        task = seq[self.round_number - 1]
+        return [f'post_survey_rating_{task}_1']
 
 
-class Results(Page):
-    def vars_for_template(self):
-        return dict(
-            treatment=self.player.treatment,
-            io_history=self.player.io_history,
-        )
+class OverallDVPage(Page):
+    form_model = 'player'
+    form_fields = ['final_dv_1']
+    template_name = 'tempo_mvp/post_questions.html'
 
-page_sequence = [InstructionPage, LLMInteraction, DVQuestions]
+
+page_sequence = [PriorBeliefsPage]
+for _ in range(Constants.num_rounds):
+    page_sequence += [InstructionPage, StreamingTaskPage, PostTaskSurveyPage]
+page_sequence.append(OverallDVPage)

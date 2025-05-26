@@ -1,0 +1,13 @@
+{% extends "global/Page.html" %}
+{% block content %}
+  <h3>Final Questions</h3>
+  <p>Thanks for completing all tasks. Please answer these final questions:</p>
+
+  {{ formfields }}
+
+  {{ next_button }}
+{% endblock %}
+
+{% block js_vars %}
+  {{ super() }}
+{% endblock %}
