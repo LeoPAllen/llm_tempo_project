@@ -8,7 +8,6 @@ from .models import (
     )
 
 
-
 class TimedPage(Page):
     def vars_for_template(self):
         self.participant.vars['page_entry_time'] = datetime.utcnow()
