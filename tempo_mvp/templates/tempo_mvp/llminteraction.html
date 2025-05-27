@@ -17,11 +17,11 @@
   <input type="hidden" name="interrupt_latency_submit" id="interrupt-latency-submit">
   <input type="hidden" name="interrupt_latency_stream" id="interrupt-latency-stream">
   <input type="hidden" name="interrupted_stream" id="interrupted-stream">
+  <input type="hidden" name="reflection_time" id="reflection-time">
 
-  <!-- Required by oTree to avoid field error -->
   {{ formfield_errors 'io_history' }}
 
-  <!-- We'll disable this in JS during streaming -->
+  <!-- Custom Next button (we disable this manually) -->
   <button type="submit" id="next-button">Next</button>
 {% endblock %}
 
@@ -33,6 +33,7 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const treatment = js_vars?.treatment || "undefined";
+    const maxAttempts = js_vars?.llm_interaction_attempts || 1;
 
     const submitBtn            = document.getElementById("submit-btn");
     const interruptBtn         = document.getElementById("interrupt-btn");
@@ -43,12 +44,15 @@
     const latencySubmitField   = document.getElementById("interrupt-latency-submit");
     const latencyStreamField   = document.getElementById("interrupt-latency-stream");
     const interruptedField     = document.getElementById("interrupted-stream");
+    const reflectionField      = document.getElementById("reflection-time");
 
     let history       = [];
     let isStreaming   = false;
     let isInterrupted = false;
     let submitTime    = null;
     let streamTime    = null;
+    let reflectionStart = null;
+    let attemptsMade = 0;
 
     function disableNextButton(disable) {
       if (!nextBtn) return;
@@ -57,20 +61,37 @@
       nextBtn.style.pointerEvents = disable ? "none" : "auto";
     }
 
+    nextBtn.addEventListener("click", function () {
+      if (reflectionStart) {
+        const now = Date.now();
+        const duration = now - reflectionStart;
+        reflectionField.value = duration;
+      }
+    });
+
     submitBtn.onclick = function () {
+      if (isStreaming || attemptsMade >= maxAttempts) return;
+
       const msg = inputField.value.trim();
-      if (!msg || isStreaming) return;
+      if (!msg) return;
 
       latencySubmitField.value = "";
       latencyStreamField.value = "";
       interruptedField.value = "";
-      isInterrupted = false;
+      reflectionField.value = "";
       historyField.value = "";
 
+      isInterrupted = false;
       disableNextButton(true);
       submitTime = Date.now();
       liveSend({ input: msg });
       inputField.value = "";
+
+      attemptsMade++;
+      if (attemptsMade >= maxAttempts) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Max attempts used";
+      }
     };
 
     interruptBtn.onclick = function () {
@@ -130,6 +151,7 @@
       interruptBtn.disabled = true;
       interruptedField.value = isInterrupted ? "True" : "False";
       disableNextButton(false);
+      reflectionStart = Date.now();
 
       history.push({
         input: userIn,
@@ -138,7 +160,7 @@
       historyField.value = JSON.stringify(history);
     };
 
-    // Disable next initially (in case user refreshes mid-stream)
+    // Disable next button initially
     disableNextButton(false);
   });
 </script>

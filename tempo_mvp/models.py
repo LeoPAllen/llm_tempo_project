@@ -13,6 +13,8 @@ GLOBAL_LLM_OUTPUT = "I advise you to..."
 
 GLOBAL_LLM_INTERACTION_INSTRUCTIONS = "Interact with the LLM assistant by..."
 
+GLOBAL_LLM_INTERACTION_ATTEMPTS = 1
+
 class Constants(BaseConstants):
     name_in_url = 'tempo_mvp'
     players_per_group = None
@@ -33,6 +35,9 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
+    # time all pages
+    page_times = models.LongStringField(blank=True)
+
     # Assigned in creating_session
     treatment = models.StringField()
 
@@ -77,4 +82,5 @@ class Player(BasePlayer):
     # Timers
     interrupt_latency_submit = models.IntegerField(blank=True)
     interrupt_latency_stream = models.IntegerField(blank=True)
+    reflection_time = models.FloatField(blank=True)
     interrupted_stream = models.BooleanField(blank=True)
