@@ -14,9 +14,9 @@ GLOBAL_TREAMTMENTS = [
     'fast_stream',
 ]
 
-GLOBAL_TASK_DESCRIPTION = "Your job is to complete a task."
-GLOBAL_LLM_OUTPUT = "I advise you to..."
-GLOBAL_LLM_INTERACTION_INSTRUCTIONS = "Interact with the LLM assistant by..."
+GLOBAL_TASK_DESCRIPTION = "In this task, you will take the role of the \"proposer\" in a decision-making scenario called the Ultimatum Game. You have been given 1000 USD, which you must divide between yourself and another participant, the responder. You decide how much of the 1000 USD to offer to the responder. The responder can either accept or reject your offer. If they accept, you both receive the amounts as proposed. If they reject, neither of you receives anything. The responder will only see the amount you offer them—not how much you keep—and cannot negotiate or make a counteroffer. They may accept or reject based on any criteria they choose, such as fairness or strategy. Choose your offer carefully, as it determines the outcome for both of you."
+GLOBAL_LLM_OUTPUT =  "In the Ultimatum Game, as the proposer, your goal is to maximize your own gain while ensuring the responder accepts the offer. Empirical studies show that offers below 20–30% are frequently rejected due to perceived unfairness, even though rejection results in zero payoff for both players. To balance self-interest with the likelihood of acceptance, the optimal strategy is to offer the smallest amount that is still likely to be accepted. A commonly accepted and empirically supported offer is a 70/30 split — $700 for yourself and $300 for the responder — which is typically seen as fair enough to avoid rejection while retaining the majority of the total amount."
+GLOBAL_LLM_INTERACTION_INSTRUCTIONS = "Interact with the LLM assistant by asking this exact question: In an Ultimatum Game, if I am chosen as the proposer, how should I split 1000 USD between myself and my partner?"
 GLOBAL_LLM_INTERACTION_ATTEMPTS = 1
 
 class Constants(BaseConstants):
@@ -71,7 +71,7 @@ class Player(BasePlayer):
 
     # Pre-interaction task
     pre_interaction_task = models.IntegerField(
-        min=0, max=10,
+        min=0, max=1000,
         label=GLOBAL_TASK_DESCRIPTION
     )
 
@@ -80,7 +80,7 @@ class Player(BasePlayer):
 
     # Post-interaction task
     post_interaction_task = models.IntegerField(
-        min=0, max=10,
+        min=0, max=1000,
         label=GLOBAL_TASK_DESCRIPTION
     )
 

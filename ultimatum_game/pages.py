@@ -26,7 +26,7 @@ class TimedPage(Page):
 class InstructionPage(TimedPage):
     def vars_for_template(self):
         return dict(
-            instructions="Your job is to follow instructions."
+            instructions="In this study, you will complete a brief series of tasks and questions related to decision-making and your interaction with a large language model assistant. You will begin with some questions about your prior experience with large language models, then complete an initial task on your own, followed by a similar task after recieving help from an AI assistant. After completing both tasks, you will be asked a few questions about your experience, including your impressions of the assistant, your decision process, and your understanding of the task. The study takes approximately 10–15 minutes, and there are no right or wrong answers. Please answer as honestly and thoughtfully as possible."
         )
 
 
@@ -47,7 +47,7 @@ class PreInteractionTaskPage(TimedPage):
 
     def vars_for_template(self):
         return dict(
-            task_description="Your job is to complete a task..."
+            task_description="Please complete the following task..."
         )
 
 
@@ -84,7 +84,7 @@ class PostInteractionTaskPage(TimedPage):
 
     def vars_for_template(self):
         return dict(
-            task_description="Your job is to complete a task..."
+            task_description="Please complete the following task..."
         )
 
 
