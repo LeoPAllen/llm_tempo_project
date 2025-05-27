@@ -2,7 +2,9 @@
 {% load otree static %}
 
 {% block content %}
-  <!-- <p><strong>Debug:</strong> treatment = <span id="debug-treatment">loading...</span></p> -->
+  <div id="instructions" style="margin-bottom: 10px;">
+    {{ llm_interaction_instructions }}
+  </div>
 
   <textarea id="user-input" rows="3" cols="60" placeholder="Type your prompt here..."></textarea><br>
   <button type="button" id="submit-btn">Submit</button>
@@ -10,10 +12,17 @@
 
   <div id="conversation" style="margin-top: 20px;"></div>
 
-  {{ formfields }}
+  <!-- Hidden fields -->
+  <input type="hidden" name="io_history" id="io-history">
   <input type="hidden" name="interrupt_latency_submit" id="interrupt-latency-submit">
   <input type="hidden" name="interrupt_latency_stream" id="interrupt-latency-stream">
-  {{ next_button }}
+  <input type="hidden" name="interrupted_stream" id="interrupted-stream">
+
+  <!-- Required by oTree to avoid field error -->
+  {{ formfield_errors 'io_history' }}
+
+  <!-- We'll disable this in JS during streaming -->
+  <button type="submit" id="next-button">Next</button>
 {% endblock %}
 
 {% block js_vars %}
@@ -24,17 +33,16 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const treatment = js_vars?.treatment || "undefined";
-    console.log("✅ Treatment:", treatment);
-    document.getElementById("debug-treatment").textContent = treatment;
 
-    const submitBtn           = document.getElementById("submit-btn");
-    const interruptBtn        = document.getElementById("interrupt-btn");
-    const inputField          = document.getElementById("user-input");
-    const conversationDiv     = document.getElementById("conversation");
-    const historyField        = document.querySelector('[name="io_history"]');
-    const nextBtn             = document.querySelector('button[type="submit"]');
-    const latencySubmitField  = document.getElementById("interrupt-latency-submit");
-    const latencyStreamField  = document.getElementById("interrupt-latency-stream");
+    const submitBtn            = document.getElementById("submit-btn");
+    const interruptBtn         = document.getElementById("interrupt-btn");
+    const inputField           = document.getElementById("user-input");
+    const conversationDiv      = document.getElementById("conversation");
+    const historyField         = document.getElementById("io-history");
+    const nextBtn              = document.getElementById("next-button");
+    const latencySubmitField   = document.getElementById("interrupt-latency-submit");
+    const latencyStreamField   = document.getElementById("interrupt-latency-stream");
+    const interruptedField     = document.getElementById("interrupted-stream");
 
     let history       = [];
     let isStreaming   = false;
@@ -42,10 +50,11 @@
     let submitTime    = null;
     let streamTime    = null;
 
-    function disableNext(on) {
+    function disableNextButton(disable) {
       if (!nextBtn) return;
-      nextBtn.disabled = on;
-      nextBtn.style.opacity = on ? "0.5" : "1";
+      nextBtn.disabled = disable;
+      nextBtn.style.opacity = disable ? "0.5" : "1";
+      nextBtn.style.pointerEvents = disable ? "none" : "auto";
     }
 
     submitBtn.onclick = function () {
@@ -54,10 +63,11 @@
 
       latencySubmitField.value = "";
       latencyStreamField.value = "";
+      interruptedField.value = "";
       isInterrupted = false;
       historyField.value = "";
 
-      disableNext(true);
+      disableNextButton(true);
       submitTime = Date.now();
       liveSend({ input: msg });
       inputField.value = "";
@@ -88,25 +98,22 @@
       aP.innerHTML = `<strong>Assistant:</strong> `;
       conversationDiv.appendChild(aP);
 
-      const words     = fullOut.split(" ");
-      const chunks    = [];
+      const words = fullOut.split(" ");
+      const chunks = [];
       const ngramSize = 1;
       for (let i = 0; i < words.length; i += ngramSize) {
         chunks.push(words.slice(i, i + ngramSize).join(" "));
       }
 
-      let startDelay = 0, streamDelay = 0;
+      let streamDelay = 0;
       switch (treatment) {
-        case "slow_stream":
-          startDelay = 0;  streamDelay = 500;  break;
-        case "medium_stream":
-          startDelay = 0;  streamDelay = 250;  break;
-        case "fast_stream":
-          startDelay = 0; streamDelay = 125;  break;
+        case "slow_stream":   streamDelay = 500; break;
+        case "medium_stream": streamDelay = 250; break;
+        case "fast_stream":   streamDelay = 125; break;
       }
 
       interruptBtn.disabled = false;
-      await new Promise(r => setTimeout(r, startDelay));
+      await new Promise(r => setTimeout(r, 0));
       streamTime = Date.now();
 
       let observedOutput = "";
@@ -121,14 +128,18 @@
 
       isStreaming = false;
       interruptBtn.disabled = true;
-      disableNext(false);
+      interruptedField.value = isInterrupted ? "True" : "False";
+      disableNextButton(false);
 
       history.push({
-        input:  userIn,
+        input: userIn,
         output: observedOutput.trim()
       });
       historyField.value = JSON.stringify(history);
     };
+
+    // Disable next initially (in case user refreshes mid-stream)
+    disableNextButton(false);
   });
 </script>
 {% endblock %}

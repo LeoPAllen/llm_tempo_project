@@ -1,5 +1,5 @@
 from otree.api import *
-from .models import GLOBAL_LLM_OUTPUT
+from .models import (GLOBAL_LLM_OUTPUT, GLOBAL_LLM_INTERACTION_INSTRUCTIONS)
 import random
 
 class InstructionPage(Page):
@@ -25,8 +25,12 @@ class PreInteractionTaskPage(Page):
 
 class LLMInteraction(Page):
     form_model = 'player'
-    form_fields = ['io_history']
+    form_fields = ['io_history', 'interrupt_latency_submit', 'interrupt_latency_stream', 'interrupted_stream']
 
+    def vars_for_template(self):
+        return dict(
+            llm_interaction_instructions=GLOBAL_LLM_INTERACTION_INSTRUCTIONS
+        )
     def js_vars(self):
         return dict(
             treatment=self.player.treatment # Force inject to test

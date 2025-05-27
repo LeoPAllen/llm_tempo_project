@@ -11,6 +11,8 @@ GLOBAL_TASK_DESCRIPTION = "Your job is to complete a task."
 
 GLOBAL_LLM_OUTPUT = "I advise you to..."
 
+GLOBAL_LLM_INTERACTION_INSTRUCTIONS = "Interact with the LLM assistant by..."
+
 class Constants(BaseConstants):
     name_in_url = 'tempo_mvp'
     players_per_group = None
@@ -71,3 +73,8 @@ class Player(BasePlayer):
         label="Would you use this assistant for future tasks?",
         widget=widgets.RadioSelect
     )
+
+    # Timers
+    interrupt_latency_submit = models.IntegerField(blank=True)
+    interrupt_latency_stream = models.IntegerField(blank=True)
+    interrupted_stream = models.BooleanField(blank=True)
