@@ -1,14 +1,25 @@
 from otree.api import *
+from .models import GLOBAL_LLM_OUTPUT
 import random
 
 class InstructionPage(Page):
     def vars_for_template(self):
         return dict(
-            task_description="Your job is to write a treatise on the positive benefits of tariffs "
-                "on the global economy (hint: there are essentially none), and to design a tariff "
-                "policy that realizes those benefits (hint: consider totally ignoring the "
-                "service economy, consider dividing by two, consider telling your friends to short SPY). Use a large language model "
-                "in any way you wish."
+            instructions="Your job is to follow instructions." 
+        )
+
+class PriorBeliefs(Page):
+    form_model = 'player'
+    form_fields = ['prior_beliefs']
+
+
+class PreInteractionTaskPage(Page):
+    form_model = 'player'
+    form_fields = ['pre_interaction_task']
+
+    def vars_for_template(self):
+        return dict(
+            task_description="Your job is to complete a task..."
         )
 
 
@@ -17,30 +28,42 @@ class LLMInteraction(Page):
     form_fields = ['io_history']
 
     def js_vars(self):
-        print("DEBUG js_vars():", self.player.treatment)
         return dict(
             treatment=self.player.treatment # Force inject to test
         )
 
     def live_method(self, data):
         user_input = data.get('input')
-        # generate dummy output (10 words, made up of random letters)
-        # this would be replaced with an LLM call
-        words = [''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=random.randint(3, 8))) for _ in range(80)]
-        output = ' '.join(words)
+        # this could be replaced with an LLM call
+        output = GLOBAL_LLM_OUTPUT
         return {self.id_in_group: dict(output=output, input=user_input)}
 
+class PostInteractionTaskPage(Page):
+    form_model = 'player'
+    form_fields = ['post_interaction_task']
+
+    def vars_for_template(self):
+        return dict(
+            task_description="Your job is to complete a task..."
+        )
 
 class DVQuestions(Page):
     form_model = 'player'
     form_fields = ['perceived_accuracy', 'delegate_future']
 
 
-class Results(Page):
-    def vars_for_template(self):
+class Conclusion(Page):
+     def vars_for_template(self):
         return dict(
-            treatment=self.player.treatment,
-            io_history=self.player.io_history,
-        )
+            conclusion="Thank you for participating" 
+        )   
 
-page_sequence = [InstructionPage, LLMInteraction, DVQuestions]
+page_sequence = [
+    InstructionPage, 
+    PriorBeliefs, 
+    PreInteractionTaskPage,
+    LLMInteraction, 
+    PostInteractionTaskPage,
+    DVQuestions,
+    Conclusion
+]

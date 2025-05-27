@@ -2,11 +2,11 @@
 {% load otree static %}
 
 {% block content %}
-  <p><strong>Debug:</strong> treatment = <span id="debug-treatment">loading...</span></p>
+  <!-- <p><strong>Debug:</strong> treatment = <span id="debug-treatment">loading...</span></p> -->
 
   <textarea id="user-input" rows="3" cols="60" placeholder="Type your prompt here..."></textarea><br>
   <button type="button" id="submit-btn">Submit</button>
-  <button type="button" id="interrupt-btn" disabled>⎋ Interrupt</button>
+  <button type="button" id="interrupt-btn" disabled>⎋ Stop</button>
 
   <div id="conversation" style="margin-top: 20px;"></div>
 
@@ -97,14 +97,12 @@
 
       let startDelay = 0, streamDelay = 0;
       switch (treatment) {
-        case "fast_start_fast_stream":
-          startDelay = 100;  streamDelay = 100;  break;
-        case "fast_start_slow_stream":
-          startDelay = 100;  streamDelay = 500;  break;
-        case "slow_start_fast_stream":
-          startDelay = 2000; streamDelay = 100;  break;
-        case "slow_start_slow_stream":
-          startDelay = 2000; streamDelay = 500;  break;
+        case "slow_stream":
+          startDelay = 0;  streamDelay = 500;  break;
+        case "medium_stream":
+          startDelay = 0;  streamDelay = 250;  break;
+        case "fast_stream":
+          startDelay = 0; streamDelay = 125;  break;
       }
 
       interruptBtn.disabled = false;

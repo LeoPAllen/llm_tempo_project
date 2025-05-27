@@ -2,13 +2,14 @@ from otree.api import *
 import random, json
 
 GLOBAL_TREAMTMENTS = [
-    'default',
-    'fast_start_fast_stream',
-    'fast_start_slow_stream',
-    'slow_start_slow_stream',
-    'slow_start_fast_stream',
+    'slow_stream',
+    'medium_stream',
+    'fast_stream',
 ]
 
+GLOBAL_TASK_DESCRIPTION = "Your job is to complete a task."
+
+GLOBAL_LLM_OUTPUT = "I advise you to..."
 
 class Constants(BaseConstants):
     name_in_url = 'tempo_mvp'
@@ -33,8 +34,29 @@ class Player(BasePlayer):
     # Assigned in creating_session
     treatment = models.StringField()
 
+    # Prior beliefs
+    prior_beliefs = models.IntegerField(
+        choices=[(i, str(i)) for i in range(1, 6)],
+        label="How much do you like LLMs?",
+        widget=widgets.RadioSelect
+    )
+
+    # pre-interaction task
+    pre_interaction_task = models.IntegerField(
+        min=0, 
+        max=10,
+        label=GLOBAL_TASK_DESCRIPTION
+    )
+
     # JSON history of {prompt, response} tuples
     io_history = models.LongStringField()
+
+    # post-interaction task
+    post_interaction_task = models.IntegerField(
+        min=0, 
+        max=10,
+        label=GLOBAL_TASK_DESCRIPTION
+    )
 
     # Dependent variable 1
     perceived_accuracy = models.IntegerField(
