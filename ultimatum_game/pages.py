@@ -5,7 +5,7 @@ from .models import (
     GLOBAL_LLM_OUTPUT, 
     GLOBAL_LLM_INTERACTION_INSTRUCTIONS,
     GLOBAL_LLM_INTERACTION_ATTEMPTS
-    )
+)
 
 
 class TimedPage(Page):
@@ -14,27 +14,31 @@ class TimedPage(Page):
         return super().vars_for_template()
 
     def before_next_page(self):
-        # Compute time spent on this page
         start = self.participant.vars.get('page_entry_time')
         if start:
             elapsed_ms = int((datetime.utcnow() - start).total_seconds() * 1000)
-            # Init timing dict on participant if needed
             page_times = self.participant.vars.get('page_times', {})
             page_times[self.__class__.__name__] = elapsed_ms
             self.participant.vars['page_times'] = page_times
-            # Save to player model as JSON string
             self.player.page_times = json.dumps(page_times)
 
 
 class InstructionPage(TimedPage):
     def vars_for_template(self):
         return dict(
-            instructions="Your job is to follow instructions." 
+            instructions="Your job is to follow instructions."
         )
+
 
 class PriorBeliefs(TimedPage):
     form_model = 'player'
-    form_fields = ['prior_beliefs']
+    form_fields = [
+        'prior_llm_trust',
+        'prior_llm_accuracy',
+        'prior_algo_vs_human',
+        'prior_llm_used_before',
+        'prior_llm_judgment_conf'
+    ]
 
 
 class PreInteractionTaskPage(TimedPage):
@@ -49,7 +53,13 @@ class PreInteractionTaskPage(TimedPage):
 
 class LLMInteraction(TimedPage):
     form_model = 'player'
-    form_fields = ['io_history', 'interrupt_latency_submit', 'interrupt_latency_stream', 'interrupted_stream', 'reflection_time']
+    form_fields = [
+        'io_history',
+        'interrupt_latency_submit',
+        'interrupt_latency_stream',
+        'interrupted_stream',
+        'reflection_time'
+    ]
 
     def vars_for_template(self):
         return dict(
@@ -59,14 +69,14 @@ class LLMInteraction(TimedPage):
     def js_vars(self):
         return dict(
             treatment=self.player.treatment,
-            llm_interaction_attempts=GLOBAL_LLM_INTERACTION_ATTEMPTS  # or dynamically set
+            llm_interaction_attempts=GLOBAL_LLM_INTERACTION_ATTEMPTS
         )
 
     def live_method(self, data):
         user_input = data.get('input')
-        # this could be replaced with an LLM call
         output = GLOBAL_LLM_OUTPUT
         return {self.id_in_group: dict(output=output, input=user_input)}
+
 
 class PostInteractionTaskPage(TimedPage):
     form_model = 'player'
@@ -77,23 +87,63 @@ class PostInteractionTaskPage(TimedPage):
             task_description="Your job is to complete a task..."
         )
 
-class DVQuestions(TimedPage):
+
+class LLMAppreciationPage(TimedPage):
     form_model = 'player'
-    form_fields = ['perceived_accuracy', 'delegate_future']
+    form_fields = [
+        'llm_reliance',
+        'llm_confidence_post',
+        'llm_helpfulness',
+        'llm_future_use_likelihood',
+        'llm_use_again',
+    ]
+
+
+class FairnessPage(TimedPage):
+    form_model = 'player'
+    form_fields = [
+        'llm_fairness',
+        'llm_objectivity',
+        'llm_understanding',
+        'llm_decision_fairness',
+    ]
+
+
+class RetentionQuizPage(TimedPage):
+    form_model = 'player'
+    form_fields = [
+        'retention_q1',
+        'retention_q2',
+        'retention_q3',
+    ]
+
+
+class TrustUsefulnessPage(TimedPage):
+    form_model = 'player'
+    form_fields = [
+        'llm_usefulness',
+        'llm_trustworthiness',
+        'llm_confidence_boost',
+    ]
+
 
 
 class Conclusion(TimedPage):
-     def vars_for_template(self):
+    def vars_for_template(self):
         return dict(
-            conclusion="Thank you for participating" 
-        )   
+            conclusion="Thank you for participating"
+        )
+
 
 page_sequence = [
-    InstructionPage, 
-    PriorBeliefs, 
+    InstructionPage,
+    PriorBeliefs,
     PreInteractionTaskPage,
-    LLMInteraction, 
+    LLMInteraction,
     PostInteractionTaskPage,
-    DVQuestions,
+    LLMAppreciationPage,
+    FairnessPage,
+    RetentionQuizPage,
+    TrustUsefulnessPage,
     Conclusion
 ]

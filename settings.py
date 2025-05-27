@@ -2,16 +2,16 @@ from os import environ
 
 SESSION_CONFIGS = [
     dict(
-        name='tempo_mvp',
-        display_name="Tempo MVP",
-        app_sequence=['tempo_mvp'],
+        name='ultimatum_game',
+        display_name="Ultimatum Game",
+        app_sequence=['ultimatum_game'],
         num_demo_participants=10,
     ),
 ]
 
 INSTALLED_APPS = [
     'otree',
-    'tempo_mvp',
+    'ultimatum_game',
 ]
 
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs
