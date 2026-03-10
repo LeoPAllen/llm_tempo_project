@@ -2,16 +2,19 @@ from os import environ
 
 SESSION_CONFIGS = [
     dict(
-        name='tempo_mvp',
-        display_name="Tempo MVP",
-        app_sequence=['tempo_mvp'],
+        name='llm_experiment',
+        display_name="LLM Experiment",
+        app_sequence=['consent', 'pre_tasks_measures', 'ultimatum_game', 'post_tasks_measures', 'conclusion'],
         num_demo_participants=10,
     ),
 ]
 
 INSTALLED_APPS = [
-    'otree',
-    'tempo_mvp',
+    'consent',
+    'ultimatum_game',
+    'post_tasks_measures',
+    'pre_tasks_measures',
+    'conclusion',
 ]
 
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs
@@ -41,3 +44,5 @@ ADMIN_PASSWORD = environ.get('OTREE_ADMIN_PASSWORD')
 DEMO_PAGE_INTRO_HTML = """ """
 
 SECRET_KEY = '2609389979412'
+
+OTREE_STYLE_CSS = '_static/global/styles.css'

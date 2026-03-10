@@ -1,0 +1,6 @@
+/* Make all radio button options horizontal */
+.otree-radio-select label {
+    display: inline-block;
+    margin-right: 2em;
+    white-space: nowrap;
+}
