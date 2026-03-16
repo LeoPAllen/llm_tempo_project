@@ -1,18 +1,27 @@
-from otree.api import Currency as c, currency_range
-from ._builtin import Page, WaitPage
-from .models import Constants
+from shared.timed_page import TimedPage
 
 
-class MyPage(Page):
-    pass
+class PostTaskMeasuresPage(TimedPage):
+    form_model = 'player'
+    form_fields = [
+        'overall_ai_usefulness',
+        'overall_ai_ease_of_use',
+        'overall_ai_trust',
+        'overall_ai_helped_quality',
+        'overall_ai_future_use',
+        'overall_ai_thoughtful',
+    ]
 
 
-class ResultsWaitPage(WaitPage):
-    pass
+class DemographicsPage(TimedPage):
+    form_model = 'player'
+    form_fields = [
+        'age',
+        'gender',
+        'education_level',
+        'job_title',
+        'years_experience',
+    ]
 
 
-class Results(Page):
-    pass
-
-
-page_sequence = [MyPage]
+page_sequence = [PostTaskMeasuresPage, DemographicsPage]

@@ -19,7 +19,7 @@ class Constants(BaseConstants):
     players_per_group = None
     num_rounds = 1
     contact_email = 'leo.allen@hec.edu'
-    estimated_minutes = 15
+    estimated_minutes = 25
 
 class Subsession(BaseSubsession):
     pass

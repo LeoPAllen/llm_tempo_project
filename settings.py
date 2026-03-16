@@ -4,14 +4,14 @@ SESSION_CONFIGS = [
     dict(
         name='llm_experiment',
         display_name="LLM Experiment",
-        app_sequence=['consent', 'pre_tasks_measures', 'ultimatum_game', 'post_tasks_measures', 'conclusion'],
+        app_sequence=['consent', 'pre_tasks_measures', 'tasks', 'post_tasks_measures', 'conclusion'],
         num_demo_participants=10,
     ),
 ]
 
 INSTALLED_APPS = [
     'consent',
-    'ultimatum_game',
+    'tasks',
     'post_tasks_measures',
     'pre_tasks_measures',
     'conclusion',

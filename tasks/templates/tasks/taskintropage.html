@@ -1,0 +1,10 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block content %}
+<h3>{{ task.title }}</h3>
+<p>Task {{ round_number }} of {{ total_rounds }}</p>
+<p>{{ task.intro_text }}</p>
+<p>Click Next when you are ready to continue.</p>
+{{ next_button }}
+{% endblock %}

@@ -7,6 +7,7 @@ class ConsentPage(TimedPage):
     form_fields = ['consent']
 
     def before_next_page(self):
+        super().before_next_page()
         if self.player.consent != 'yes':
             self.participant.vars['consent_declined'] = True
 

@@ -1,6 +1,9 @@
 {% extends "global/Page.html" %}
+{% load otree static %}
+
 {% block content %}
-<p>{{ conclusion }}</p>
-<p>Click Next when you are ready to exit the survey.</p>
+<h3>Demographic Survey</h3>
+
+{{ formfields }}
 {{ next_button }}
 {% endblock %}

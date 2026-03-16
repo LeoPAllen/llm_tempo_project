@@ -1,0 +1,12 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block content %}
+<h3>{{ task.title }}</h3>
+<p><strong>{{ stage_title }}</strong></p>
+<p>{{ task.intro_text }}</p>
+<p>{{ task.response_prompt }}</p>
+
+{{ formfields }}
+{{ next_button }}
+{% endblock %}

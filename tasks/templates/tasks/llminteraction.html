@@ -1,0 +1,161 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block content %}
+<h3>{{ task.title }}</h3>
+<p>{{ task.intro_text }}</p>
+
+<div id="instructions" style="margin-bottom: 10px;">
+  {{ llm_interaction_instructions }}
+</div>
+
+<textarea id="user-input" rows="4" cols="70" placeholder="Paste your prompt here..."></textarea><br>
+<button type="button" id="submit-btn">Submit</button>
+<button type="button" id="interrupt-btn" disabled>Stop</button>
+
+<div id="conversation" style="margin-top: 20px;"></div>
+
+<input type="hidden" name="io_history" id="io-history">
+<input type="hidden" name="interrupt_latency_submit" id="interrupt-latency-submit">
+<input type="hidden" name="interrupt_latency_stream" id="interrupt-latency-stream">
+<input type="hidden" name="interrupted_stream" id="interrupted-stream">
+<input type="hidden" name="reflection_time" id="reflection-time">
+
+{{ formfield_errors 'io_history' }}
+
+<button type="submit" id="next-button">Next</button>
+{% endblock %}
+
+{% block js_vars %}
+{{ super() }}
+{% endblock %}
+
+{% block global_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const treatment = js_vars?.treatment || "undefined";
+  const maxAttempts = js_vars?.llm_interaction_attempts || 1;
+
+  const submitBtn = document.getElementById("submit-btn");
+  const interruptBtn = document.getElementById("interrupt-btn");
+  const inputField = document.getElementById("user-input");
+  const conversationDiv = document.getElementById("conversation");
+  const historyField = document.getElementById("io-history");
+  const nextBtn = document.getElementById("next-button");
+  const latencySubmitField = document.getElementById("interrupt-latency-submit");
+  const latencyStreamField = document.getElementById("interrupt-latency-stream");
+  const interruptedField = document.getElementById("interrupted-stream");
+  const reflectionField = document.getElementById("reflection-time");
+
+  let history = [];
+  let isStreaming = false;
+  let isInterrupted = false;
+  let submitTime = null;
+  let streamTime = null;
+  let reflectionStart = null;
+  let attemptsMade = 0;
+
+  function disableNextButton(disable) {
+    if (!nextBtn) return;
+    nextBtn.disabled = disable;
+    nextBtn.style.opacity = disable ? "0.5" : "1";
+    nextBtn.style.pointerEvents = disable ? "none" : "auto";
+  }
+
+  nextBtn.addEventListener("click", function () {
+    if (reflectionStart) {
+      reflectionField.value = Date.now() - reflectionStart;
+    }
+  });
+
+  submitBtn.onclick = function () {
+    if (isStreaming || attemptsMade >= maxAttempts) return;
+
+    const msg = inputField.value.trim();
+    if (!msg) return;
+
+    latencySubmitField.value = "";
+    latencyStreamField.value = "";
+    interruptedField.value = "";
+    reflectionField.value = "";
+    historyField.value = "";
+
+    isInterrupted = false;
+    disableNextButton(true);
+    submitTime = Date.now();
+    liveSend({ input: msg });
+    inputField.value = "";
+
+    attemptsMade += 1;
+    if (attemptsMade >= maxAttempts) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Max attempts used";
+    }
+  };
+
+  interruptBtn.onclick = function () {
+    if (!isStreaming || isInterrupted) return;
+    isInterrupted = true;
+    interruptBtn.disabled = true;
+    const now = Date.now();
+    latencySubmitField.value = now - submitTime;
+    if (streamTime) {
+      latencyStreamField.value = now - streamTime;
+    }
+  };
+
+  liveRecv = async function (data) {
+    isStreaming = true;
+    streamTime = null;
+
+    const userIn = data.input;
+    const fullOut = data.output;
+
+    const userParagraph = document.createElement("p");
+    userParagraph.innerHTML = `<strong>You:</strong> ${userIn}`;
+    conversationDiv.appendChild(userParagraph);
+
+    const assistantParagraph = document.createElement("p");
+    assistantParagraph.innerHTML = "<strong>Assistant:</strong> ";
+    conversationDiv.appendChild(assistantParagraph);
+
+    const words = fullOut.split(" ");
+    const chunks = [];
+    for (let i = 0; i < words.length; i += 1) {
+      chunks.push(words.slice(i, i + 1).join(" "));
+    }
+
+    let streamDelay = 0;
+    if (treatment === "slow_stream") streamDelay = 500;
+    if (treatment === "medium_stream") streamDelay = 250;
+    if (treatment === "fast_stream") streamDelay = 125;
+
+    interruptBtn.disabled = false;
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    streamTime = Date.now();
+
+    let observedOutput = "";
+    for (const chunk of chunks) {
+      if (isInterrupted) break;
+      observedOutput += chunk + " ";
+      assistantParagraph.innerHTML = `<strong>Assistant:</strong> ${observedOutput}`;
+      if (streamDelay) {
+        await new Promise((resolve) => setTimeout(resolve, streamDelay));
+      }
+    }
+
+    isStreaming = false;
+    interruptBtn.disabled = true;
+    interruptedField.value = isInterrupted ? "True" : "False";
+    disableNextButton(false);
+    reflectionStart = Date.now();
+
+    history.push({
+      input: userIn,
+      output: observedOutput.trim()
+    });
+    historyField.value = JSON.stringify(history);
+  };
+});
+</script>
+{% endblock %}

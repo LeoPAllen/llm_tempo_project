@@ -1,0 +1,377 @@
+LLM TEMPO EXPERIMENT
+PAGE-BY-PAGE SCRIPT
+
+Purpose
+This file is a working script for the full oTree experiment currently implemented in this project. It is intended as an editable content tracker so wording, order, and measures can be revised without hunting through templates and model files.
+
+High-level flow
+1. Consent
+2. Practice LLM interaction + attention check
+3. Pre-task measures
+4. Task rounds in randomized order
+5. Post-task measures
+6. Demographics
+7. Conclusion
+
+
+PAGE 1. Consent
+App: consent
+Page class: ConsentPage
+
+Current content
+- Study title: LLM Tempo and Decision-Making
+- Purpose: study about how people interact with LLMs while completing decision-making tasks
+- Participants complete:
+  short practice interaction
+  background questions
+  series of tasks with AI support
+  post-study survey
+- Estimated duration: 25 minutes
+- Participation is voluntary
+- Responses are anonymized
+- Contact email: leo.allen@hec.edu
+- Consent choice:
+  yes = I consent to participate
+  no = I do not consent
+
+Edit notes
+- Replace email if needed
+- Replace duration if timing estimate changes
+- Add IRB/payment language if needed
+
+
+PAGE 2. Practice LLM Interaction + Attention Check
+App: pre_tasks_measures
+Page class: PracticePage
+
+Current content
+- Participants are told they will complete a series of tasks with help from a custom LLM
+- They are shown a practice prompt about camouflage
+- They are shown a hallucinated LLM answer stating arctic foxes are grey in winter
+- Attention check question:
+  Based on the LLM output, what color are arctic foxes in the winter?
+- Response options:
+  White
+  Grey
+  Brown
+  Green
+
+Design intent
+- This page teaches the interaction format
+- It also checks whether participants read the displayed LLM output rather than relying on prior knowledge
+
+
+PAGE 3. Pre-Task Measures
+App: pre_tasks_measures
+Page class: PreTaskMeasuresPage
+
+Current items
+- I am confident in advice provided by AI systems.
+- AI systems are generally reliable sources of guidance.
+- I can trust an AI assistant to provide useful help on unfamiliar tasks.
+- I prefer complex problems to simple ones.
+- I enjoy tasks that require a lot of thinking.
+- I only think as hard as I have to.
+- How accurate do you believe LLMs are in general?
+- To what extent do you believe algorithms outperform humans in decision-making tasks?
+- Have you used an LLM before?
+- How confident are you in your ability to judge whether an LLM's output is reliable?
+- How strong do you consider your quantitative reasoning skills?
+- How likely are you to stop and rethink an initial answer before making a decision?
+
+Response scales
+- Most items use 1-7 Likert scales
+- Prior LLM use is yes/no/not sure
+
+Edit notes
+- This section is currently a pragmatic implementation, not a finalized validated scale battery
+- Replace items with exact literature-based scales if needed
+
+
+PAGE 4. Task Intro Template
+App: tasks
+Page class: TaskIntroPage
+
+Current behavior
+- One intro page appears at the start of each task round
+- The order of tasks is randomized per participant
+- The same LLM tempo treatment is assigned across all task rounds for a participant
+
+Current task pool
+- Ultimatum Game
+- Dictator Game
+- Net Present Value
+- Trolley Problem
+- Time Preference
+- Asset Allocation
+
+Edit notes
+- If you want semi-random instead of fully random ordering, change the round assignment logic in the app
+
+
+PAGE 5+. Repeated Task Block Structure
+Each task uses the same 5-page structure:
+1. Task intro
+2. Pre-LLM response
+3. LLM interaction
+4. Post-LLM response
+5. Post-task measures
+
+
+TASK A. Ultimatum Game
+Task id: ultimatum
+
+Task intro / description
+- Participant is proposer in an Ultimatum Game
+- Total amount is 1000 USD
+- Responder accepts or rejects
+- If rejected, both get nothing
+
+Pre-LLM response
+- Prompt: how much of the 1000 USD would you offer?
+- Allowed range: 0 to 1000
+
+LLM interaction prompt
+- "In an Ultimatum Game, if I am chosen as the proposer, how should I split 1000 USD between myself and my partner?"
+
+LLM output summary
+- Notes that low offers are often rejected
+- Suggests a 70/30 split
+
+Post-LLM response
+- Same decision question again
+
+Post-task measures
+- Retention q1: what happens if responder rejects?
+- Retention q2: what increases rejection rates?
+- AI evaluation items:
+  reliance
+  confidence
+  helpfulness
+  usefulness
+  trustworthiness
+  understanding
+  future use likelihood
+  use again
+
+
+TASK B. Dictator Game
+Task id: dictator
+
+Task intro / description
+- Participant is dictator in a Dictator Game
+- Total amount is 100 USD
+- Other person must accept whatever amount is given
+
+Pre-LLM response
+- Prompt: how much money would you give to the other person?
+- Allowed range: 0 to 100
+
+LLM interaction prompt
+- "In a Dictator Game, how should I split 100 USD between myself and another person?"
+
+LLM output summary
+- Notes common giving range of 10% to 50%
+- Mentions fairness, concern for others, self-image, moral values
+
+Post-LLM response
+- Same decision question again
+
+Post-task measures
+- Retention q1: what range of giving is common?
+- Retention q2: which factor was not mentioned?
+- Same AI evaluation items as other tasks
+
+
+TASK C. Net Present Value
+Task id: npv
+
+Task intro / description
+- Value a 10-year government bond
+- Face value: 1000 USD
+- Coupon rate: 4%
+- Semiannual payments
+- Discount rate: 3% annually
+
+Pre-LLM response
+- Prompt: estimate the NPV, rounded to nearest whole number
+- Numeric free response
+
+LLM interaction prompt
+- "Teach me how to calculate the Net Present Value of a 10-year government bond without solving it for me. The bond has a face value of 1000 USD and a semiannual payment frequency, current discount rate of 3% and a coupon of 4%."
+
+LLM output summary
+- Explains discounting each cash flow
+- Notes 20 USD coupon payments
+- Notes 1.5% per-period discount rate
+- Says to sum discounted coupons and face value
+
+Post-LLM response
+- Same NPV estimate again
+
+Post-task measures
+- Retention q1: coupon payment every six months
+- Retention q2: annual discount rate used
+- Same AI evaluation items as other tasks
+
+
+TASK D. Trolley Problem
+Task id: trolley
+
+Task intro / description
+- Runaway trolley heading toward five people
+- Pulling switch redirects trolley to track with one person
+
+Pre-LLM response
+- Prompt: likelihood of pulling the switch
+- Allowed range: 0 to 100
+
+LLM interaction prompt
+- "In the trolley problem, a runaway trolley is headed toward five people but I have the option to pull a switch to divert it onto another track, where it would kill one person instead. What should I do? Why?"
+
+LLM output summary
+- Gives utilitarian justification for pulling the switch
+- Notes deontological objection
+
+Post-LLM response
+- Same likelihood judgment again
+
+Post-task measures
+- Retention q1: which ethical view supports pulling the switch?
+- Retention q2: how many people would be saved?
+- Same AI evaluation items as other tasks
+
+
+TASK E. Time Preference
+Task id: time_preference
+
+Task intro / description
+- Choose between:
+  Option A: 75 USD today
+  Option B: 85 USD in 10 days
+
+Pre-LLM response
+- Binary choice
+
+LLM interaction prompt
+- "What should I consider when choosing between getting 75 USD today or 85 USD in 10 days?"
+
+LLM output summary
+- Explains intertemporal choice
+- Mentions present bias
+- Notes the delayed option is a strong short-term return
+
+Post-LLM response
+- Same binary choice again
+
+Post-task measures
+- Retention q1: what was the delayed payment option?
+- Retention q2: what concept describes favoring immediate rewards?
+- Same AI evaluation items as other tasks
+
+
+TASK F. Asset Allocation
+Task id: portfolio
+
+Task intro / description
+- Allocate 10000 USD across stocks, bonds, and cash
+- Whole-dollar entries
+- Must sum to exactly 10000 USD
+
+Pre-LLM response
+- Stocks amount
+- Bonds amount
+- Cash amount
+- Validation: total must equal 10000
+
+LLM interaction prompt
+- "What should I consider when deciding what percentage of my portfolio to allocate to stocks, bonds, and cash?"
+
+LLM output summary
+- Mentions risk tolerance, time horizon, liquidity, financial goals
+- Notes stocks have more volatility
+- Gives example 60/30/10 allocation
+
+Post-LLM response
+- Same allocation task again
+
+Post-task measures
+- Retention q1: which asset class has greater short-term volatility?
+- Retention q2: what example allocation was given?
+- Same AI evaluation items as other tasks
+
+
+POST-TASK SECTION
+
+PAGE AFTER ALL TASKS. Overall Post-Task Measures
+App: post_tasks_measures
+Page class: PostTaskMeasuresPage
+
+Current items
+- Across all tasks, the AI assistant was useful.
+- Across all tasks, the AI assistant was easy to use.
+- Across all tasks, I trusted the AI assistant.
+- Across all tasks, the AI assistant improved the quality of my decisions.
+- I would use an AI assistant again for similar tasks in the future.
+- The pace of the assistant made its responses feel thoughtful.
+
+Response scale
+- 1-7 Likert
+
+Edit notes
+- This is a placeholder global battery and can be replaced with a finalized TAM / trust / AI attitude scale
+
+
+NEXT PAGE. Demographics
+App: post_tasks_measures
+Page class: DemographicsPage
+
+Current items
+- Age
+- Gender
+  Male
+  Female
+  Other
+  Prefer not to answer
+- Education level
+  High school or equivalent
+  Some college
+  Bachelor's degree
+  Master's degree
+  Doctorate or professional degree
+  Other
+  Prefer not to answer
+- Job
+- Years of experience
+
+
+FINAL PAGE. Conclusion
+App: conclusion
+Page class: Conclusion
+
+Current content
+- Thank you for participating in the study.
+- Click Next when you are ready to exit the survey.
+
+
+IMPLEMENTATION NOTES
+
+Randomization
+- Task order is currently fully randomized across the 6 implemented tasks
+- LLM tempo treatment is assigned once per participant and held constant across tasks
+
+Current LLM tempo treatments
+- slow_stream
+- medium_stream
+- fast_stream
+
+Validation rules currently implemented
+- Ultimatum response: 0 to 1000
+- Dictator response: 0 to 100
+- Trolley response: 0 to 100
+- Asset allocation totals must sum to exactly 10000
+
+Known content status
+- The experiment is now implemented end-to-end
+- Some measure batteries are pragmatic placeholders rather than finalized literature replications
+- This file should be updated alongside any wording or flow changes in the oTree code

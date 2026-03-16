@@ -1,0 +1,75 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block content %}
+<h3>Practice LLM Interaction</h3>
+
+<p>In this experiment, you will complete a series of tasks with help from a custom large language model (LLM).</p>
+
+<p>For this practice round, copy and paste the prompt below into the mock LLM interface, review the output, and then answer the question that follows.</p>
+
+<p><strong>Prompt to paste into the LLM:</strong></p>
+<p>{{ practice_prompt }}</p>
+
+<textarea id="user-input" rows="4" cols="70" placeholder="Paste the prompt here..."></textarea><br>
+<button type="button" id="submit-btn">Submit</button>
+
+<div id="conversation" style="margin-top: 20px;"></div>
+
+<input type="hidden" name="practice_io_history" id="practice-io-history">
+
+{{ formfield 'practice_attention_check' }}
+{{ next_button }}
+{% endblock %}
+
+{% block global_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const submitBtn = document.getElementById("submit-btn");
+  const inputField = document.getElementById("user-input");
+  const conversationDiv = document.getElementById("conversation");
+  const historyField = document.getElementById("practice-io-history");
+  const outputText = js_vars?.practice_output || "";
+
+  let history = [];
+  let submitted = false;
+
+  submitBtn.onclick = async function () {
+    if (submitted) return;
+
+    const msg = inputField.value.trim();
+    if (!msg) return;
+
+    submitted = true;
+    liveSend({ input: msg });
+    submitBtn.disabled = true;
+    inputField.disabled = true;
+  };
+
+  liveRecv = async function (data) {
+    const userParagraph = document.createElement("p");
+    userParagraph.innerHTML = `<strong>You:</strong> ${data.input}`;
+    conversationDiv.appendChild(userParagraph);
+
+    const assistantParagraph = document.createElement("p");
+    assistantParagraph.innerHTML = "<strong>Assistant:</strong> ";
+    conversationDiv.appendChild(assistantParagraph);
+
+    const words = outputText.split(" ");
+    let observedOutput = "";
+
+    for (const word of words) {
+      observedOutput += word + " ";
+      assistantParagraph.innerHTML = `<strong>Assistant:</strong> ${observedOutput}`;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+
+    history.push({
+      input: data.input,
+      output: observedOutput.trim()
+    });
+    historyField.value = JSON.stringify(history);
+  };
+});
+</script>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block content %}
+<h3>{{ task.title }} Post-Task Measures</h3>
+
+<p><strong>{{ retention_q1_text }}</strong></p>
+{{ formfield 'retention_q1' }}
+
+<p><strong>{{ retention_q2_text }}</strong></p>
+{{ formfield 'retention_q2' }}
+
+{{ formfield 'llm_reliance' }}
+{{ formfield 'llm_confidence_post' }}
+{{ formfield 'llm_helpfulness' }}
+{{ formfield 'llm_usefulness' }}
+{{ formfield 'llm_trustworthiness' }}
+{{ formfield 'llm_understanding' }}
+{{ formfield 'llm_future_use_likelihood' }}
+{{ formfield 'llm_use_again' }}
+
+{{ next_button }}
+{% endblock %}

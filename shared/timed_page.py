@@ -13,7 +13,8 @@ class TimedPage(Page):
         if start:
             elapsed_ms = int((datetime.utcnow() - start).total_seconds() * 1000)
             page_times = self.participant.vars.get('page_times', {})
-            page_times[self.__class__.__name__] = elapsed_ms
+            key = f'{self.__class__.__name__}_round_{self.round_number}'
+            page_times[key] = elapsed_ms
             self.participant.vars['page_times'] = page_times
             self.player.page_times = json.dumps(page_times)
 
