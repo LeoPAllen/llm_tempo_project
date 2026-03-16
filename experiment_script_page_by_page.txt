@@ -87,6 +87,21 @@ Edit notes
 - This section is currently a pragmatic implementation, not a finalized validated scale battery
 - Replace items with exact literature-based scales if needed
 
+Scholarly source notes
+- Trust in automation:
+  Jian, J. Y., Bisantz, A. M., & Drury, C. G. (2000). Foundations for an empirically determined scale of trust in automated systems.
+  Note: the current trust items are adapted placeholders inspired by this construct, not a direct item-for-item replication.
+- Need for cognition:
+  Cacioppo, J. T., Petty, R. E., & Kao, C. F. (1984). The efficient assessment of need for cognition.
+  Also referenced in your draft through the short-form measure hosted by PsyToolkit.
+  Note: the current NFC items are simplified placeholders, not the exact validated short scale.
+- Numeracy / risk literacy:
+  Cokely, E. T., Galesic, M., Schulz, E., Ghazal, S., & Garcia-Retamero, R. (2012). Measuring risk literacy: The Berlin Numeracy Test.
+  Note: the current implementation uses a self-rated numeracy item rather than the Berlin Numeracy Test itself.
+- Cognitive reflection:
+  Frederick, S. (2005). Cognitive reflection and decision making.
+  Note: the current implementation uses a self-report reflection item, not the standard Cognitive Reflection Test.
+
 
 PAGE 4. Task Intro Template
 App: tasks
@@ -154,6 +169,14 @@ Post-task measures
   future use likelihood
   use again
 
+Scholarly source notes
+- Ultimatum Game paradigm:
+  Guth, W., Schmittberger, R., & Schwarze, B. (1982). An experimental analysis of ultimatum bargaining.
+- Typical rejection/offer patterns:
+  Camerer, C. F. (2003). Behavioral Game Theory: Experiments in Strategic Interaction.
+- AI evaluation items:
+  These are custom/adapted items. They are not currently tied to a single validated post-task scale in the code.
+
 
 TASK B. Dictator Game
 Task id: dictator
@@ -181,6 +204,15 @@ Post-task measures
 - Retention q1: what range of giving is common?
 - Retention q2: which factor was not mentioned?
 - Same AI evaluation items as other tasks
+
+Scholarly source notes
+- Dictator Game paradigm:
+  Forsythe, R., Horowitz, J. L., Savin, N. E., & Sefton, M. (1994). Fairness in simple bargaining experiments.
+- Social preference framing in your original draft:
+  Murphy, R. O., Ackermann, K. A., & Handgraaf, M. (2011). Measuring social value orientation.
+  Note: your draft mentioned possibly adding SVO as a related measure, but the current implementation does not include the SVO slider measure.
+- AI usefulness / trust items:
+  Current items are adapted placeholders rather than direct replications of a named validated scale.
 
 
 TASK C. Net Present Value
@@ -214,6 +246,14 @@ Post-task measures
 - Retention q2: annual discount rate used
 - Same AI evaluation items as other tasks
 
+Scholarly source notes
+- Net Present Value / bond valuation task:
+  This is a domain task rather than a direct replication of a single canonical psychology scale.
+- Risk literacy / numeracy background for this type of task:
+  Cokely, E. T., et al. (2012). Measuring risk literacy: The Berlin Numeracy Test.
+- Your draft also referenced:
+  Cokely et al. (2018) / Skilled Decision Theory review as conceptual motivation for numeracy and decision quality.
+
 
 TASK D. Trolley Problem
 Task id: trolley
@@ -240,6 +280,14 @@ Post-task measures
 - Retention q1: which ethical view supports pulling the switch?
 - Retention q2: how many people would be saved?
 - Same AI evaluation items as other tasks
+
+Scholarly source notes
+- Trolley Problem paradigm:
+  Foot, P. (1967). The problem of abortion and the doctrine of double effect.
+  Thomson, J. J. (1976). Killing, letting die, and the trolley problem.
+- Utilitarianism-related scale mentioned in your draft:
+  Kahane, G., Everett, J. A. C., Earp, B. D., Farias, M., & Savulescu, J. (2018). Beyond sacrificial harm: A two-dimensional model of utilitarian psychology.
+  Note: your draft mentioned the Oxford Utilitarianism Scale as a possible add-on, but it is not currently implemented.
 
 
 TASK E. Time Preference
@@ -268,6 +316,14 @@ Post-task measures
 - Retention q1: what was the delayed payment option?
 - Retention q2: what concept describes favoring immediate rewards?
 - Same AI evaluation items as other tasks
+
+Scholarly source notes
+- Intertemporal choice / time preference task:
+  Frederick, S., Loewenstein, G., & O'Donoghue, T. (2002). Time discounting and time preference: A critical review.
+- Present bias framing:
+  Laibson, D. (1997). Golden eggs and hyperbolic discounting.
+- Note:
+  The implemented binary choice is a custom task stimulus informed by the intertemporal choice literature, not a direct replication of a named validated scale.
 
 
 TASK F. Asset Allocation
@@ -300,6 +356,13 @@ Post-task measures
 - Retention q2: what example allocation was given?
 - Same AI evaluation items as other tasks
 
+Scholarly source notes
+- Asset allocation / risk preference task:
+  This is a custom portfolio-allocation task rather than a direct replication of a single canonical scale.
+- Related risk-preference source referenced in your draft:
+  Blais, A.-R., & Weber, E. U. (2006). A domain-specific risk-taking (DOSPERT) scale for adult populations.
+  Note: your draft suggested possibly adding the financial DOSPERT as a task-specific measure, but it is not currently implemented.
+
 
 POST-TASK SECTION
 
@@ -320,6 +383,14 @@ Response scale
 
 Edit notes
 - This is a placeholder global battery and can be replaced with a finalized TAM / trust / AI attitude scale
+
+Scholarly source notes
+- AI attitudes / trust direction from your draft:
+  Schepman, A., & Rodway, P. (2020). Initial validation of the general attitudes toward artificial intelligence scale.
+- Perceived usefulness / ease of use direction:
+  Davis, F. D. (1989). Perceived usefulness, perceived ease of use, and user acceptance of information technology.
+- Note:
+  The implemented post-task items are inspired by these literatures but are not direct scale replications.
 
 
 NEXT PAGE. Demographics
@@ -375,3 +446,14 @@ Known content status
 - The experiment is now implemented end-to-end
 - Some measure batteries are pragmatic placeholders rather than finalized literature replications
 - This file should be updated alongside any wording or flow changes in the oTree code
+
+Sources referenced in original draft document
+- Jian, J. Y., Bisantz, A. M., & Drury, C. G. (2000). Trust in automation scale foundation.
+- Cacioppo, J. T., Petty, R. E., & Kao, C. F. (1984). Need for Cognition.
+- Cokely, E. T., et al. (2012). Berlin Numeracy Test.
+- Frederick, S. (2005). Cognitive Reflection Test.
+- Murphy, R. O., Ackermann, K. A., & Handgraaf, M. (2011). Social Value Orientation slider measure.
+- Kahane, G., et al. (2018). Oxford Utilitarianism Scale.
+- Blais, A.-R., & Weber, E. U. (2006). DOSPERT.
+- Schepman, A., & Rodway, P. (2020). General attitudes toward artificial intelligence.
+- Davis, F. D. (1989). Technology Acceptance Model constructs.
