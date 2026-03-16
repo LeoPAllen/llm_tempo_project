@@ -2,18 +2,25 @@
 {% load otree static %}
 
 {% block content %}
-<h3>{{ task.title }}</h3>
-<p>{{ task.intro_text }}</p>
+<div class="study-page">
+<div class="study-kicker">LLM Interaction</div>
+<h3 class="study-title">{{ task.title }}</h3>
+<div class="study-panel">
+  <p>{{ task.intro_text }}</p>
+</div>
 
-<div id="instructions" style="margin-bottom: 10px;">
-  {{ llm_interaction_instructions }}
+<div id="instructions" class="study-panel">
+  <p><span class="study-label">Instructions:</span></p>
+  <p>{{ llm_interaction_instructions }}</p>
 </div>
 
 <textarea id="user-input" rows="4" cols="70" placeholder="Paste your prompt here..."></textarea><br>
+<div class="study-actions">
 <button type="button" id="submit-btn">Submit</button>
 <button type="button" id="interrupt-btn" disabled>Stop</button>
+</div>
 
-<div id="conversation" style="margin-top: 20px;"></div>
+<div id="conversation" class="study-chat"></div>
 
 <input type="hidden" name="io_history" id="io-history">
 <input type="hidden" name="interrupt_latency_submit" id="interrupt-latency-submit">
@@ -24,6 +31,7 @@
 {{ formfield_errors 'io_history' }}
 
 <button type="submit" id="next-button">Next</button>
+</div>
 {% endblock %}
 
 {% block js_vars %}

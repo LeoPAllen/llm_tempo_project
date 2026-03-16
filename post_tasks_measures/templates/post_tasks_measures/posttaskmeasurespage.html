@@ -2,10 +2,13 @@
 {% load otree static %}
 
 {% block content %}
-<h3>Post-Task Measures</h3>
+<div class="study-page">
+<div class="study-kicker">Post-Study</div>
+<h3 class="study-title">Post-Task Measures</h3>
 
-<p>Please answer the following questions about your experience across all tasks.</p>
+<p class="study-lead">Please answer the following questions about your experience across all tasks.</p>
 
 {{ formfields }}
 {{ next_button }}
+</div>
 {% endblock %}

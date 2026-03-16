@@ -2,11 +2,15 @@
 {% load otree static %}
 
 {% block content %}
-<h3>{{ task.title }}</h3>
-<p><strong>{{ stage_title }}</strong></p>
+<div class="study-page">
+<div class="study-kicker">{{ stage_title }}</div>
+<h3 class="study-title">{{ task.title }}</h3>
+<div class="study-panel">
 <p>{{ task.intro_text }}</p>
-<p>{{ task.response_prompt }}</p>
+</div>
+<p class="study-lead"><span class="study-label">Your task:</span> {{ task.response_prompt }}</p>
 
 {{ formfields }}
 {{ next_button }}
+</div>
 {% endblock %}

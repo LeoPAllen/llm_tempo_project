@@ -2,9 +2,13 @@
 {% load otree static %}
 
 {% block content %}
-<h3>{{ task.title }}</h3>
-<p>Task {{ round_number }} of {{ total_rounds }}</p>
+<div class="study-page">
+<div class="study-kicker">Task {{ round_number }} of {{ total_rounds }}</div>
+<h3 class="study-title">{{ task.title }}</h3>
+<div class="study-panel">
 <p>{{ task.intro_text }}</p>
+</div>
 <p>Click Next when you are ready to continue.</p>
 {{ next_button }}
+</div>
 {% endblock %}

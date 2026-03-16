@@ -2,12 +2,14 @@
 {% load otree static %}
 
 {% block content %}
-<h3>{{ task.title }} Post-Task Measures</h3>
+<div class="study-page">
+<div class="study-kicker">Post-Task</div>
+<h3 class="study-title">{{ task.title }} Post-Task Measures</h3>
 
-<p><strong>{{ retention_q1_text }}</strong></p>
+<p class="study-label">{{ retention_q1_text }}</p>
 {{ formfield 'retention_q1' }}
 
-<p><strong>{{ retention_q2_text }}</strong></p>
+<p class="study-label">{{ retention_q2_text }}</p>
 {{ formfield 'retention_q2' }}
 
 {{ formfield 'llm_reliance' }}
@@ -20,4 +22,5 @@
 {{ formfield 'llm_use_again' }}
 
 {{ next_button }}
+</div>
 {% endblock %}

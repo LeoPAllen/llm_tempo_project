@@ -2,24 +2,31 @@
 {% load otree static %}
 
 {% block content %}
-<h3>Practice LLM Interaction</h3>
+<div class="study-page">
+<div class="study-kicker">Practice</div>
+<h3 class="study-title">Practice LLM Interaction</h3>
 
-<p>In this experiment, you will complete a series of tasks with help from a custom large language model (LLM).</p>
+<p class="study-lead">In this experiment, you will complete a series of tasks with help from a custom large language model (LLM).</p>
 
 <p>For this practice round, copy and paste the prompt below into the mock LLM interface, review the output, and then answer the question that follows.</p>
 
-<p><strong>Prompt to paste into the LLM:</strong></p>
+<div class="study-panel">
+<p><span class="study-label">Prompt to paste into the LLM:</span></p>
 <p>{{ practice_prompt }}</p>
+</div>
 
 <textarea id="user-input" rows="4" cols="70" placeholder="Paste the prompt here..."></textarea><br>
+<div class="study-actions">
 <button type="button" id="submit-btn">Submit</button>
+</div>
 
-<div id="conversation" style="margin-top: 20px;"></div>
+<div id="conversation" class="study-chat"></div>
 
 <input type="hidden" name="practice_io_history" id="practice-io-history">
 
 {{ formfield 'practice_attention_check' }}
 {{ next_button }}
+</div>
 {% endblock %}
 
 {% block global_scripts %}
