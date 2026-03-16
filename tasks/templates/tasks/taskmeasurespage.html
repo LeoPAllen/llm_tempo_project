@@ -3,8 +3,11 @@
 
 {% block content %}
 <div class="study-page">
-<div class="study-kicker">Post-Task</div>
-<h3 class="study-title">{{ task.title }} Post-Task Measures</h3>
+{% if show_debug_treatment %}
+<div class="debug-badge">Debug only: treatment = {{ debug_treatment }}</div>
+{% endif %}
+<div class="study-kicker">Questions</div>
+<h3 class="study-title">A Few Follow-Up Questions</h3>
 
 <p class="study-label">{{ retention_q1_text }}</p>
 {{ formfield 'retention_q1' }}

@@ -4,7 +4,12 @@ import random
 from otree.api import BaseConstants, BaseSubsession, BaseGroup, BasePlayer, models, widgets
 
 
-GLOBAL_TREATMENTS = ['slow_stream', 'medium_stream', 'fast_stream']
+GLOBAL_TREATMENTS = [
+    'A_fast_start_fast_stream',
+    'B_slow_start_fast_stream',
+    'C_fast_start_slow_stream',
+    'D_slow_start_slow_stream',
+]
 LIKERT_7 = [(i, str(i)) for i in range(1, 8)]
 
 TASKS = {

@@ -3,7 +3,10 @@
 
 {% block content %}
 <div class="study-page">
-<div class="study-kicker">LLM Interaction</div>
+{% if show_debug_treatment %}
+<div class="debug-badge">Debug only: treatment = {{ debug_treatment }}</div>
+{% endif %}
+<div class="study-kicker">Assistant</div>
 <h3 class="study-title">{{ task.title }}</h3>
 <div class="study-panel">
   <p>{{ task.intro_text }}</p>
@@ -43,6 +46,12 @@
 document.addEventListener("DOMContentLoaded", function () {
   const treatment = js_vars?.treatment || "undefined";
   const maxAttempts = js_vars?.llm_interaction_attempts || 1;
+  const treatmentConfig = {
+    A_fast_start_fast_stream: { startDelay: 100, streamDelay: 100 },
+    B_slow_start_fast_stream: { startDelay: 2000, streamDelay: 100 },
+    C_fast_start_slow_stream: { startDelay: 100, streamDelay: 500 },
+    D_slow_start_slow_stream: { startDelay: 2000, streamDelay: 500 }
+  };
 
   const submitBtn = document.getElementById("submit-btn");
   const interruptBtn = document.getElementById("interrupt-btn");
@@ -133,13 +142,10 @@ document.addEventListener("DOMContentLoaded", function () {
       chunks.push(words.slice(i, i + 1).join(" "));
     }
 
-    let streamDelay = 0;
-    if (treatment === "slow_stream") streamDelay = 500;
-    if (treatment === "medium_stream") streamDelay = 250;
-    if (treatment === "fast_stream") streamDelay = 125;
+    const config = treatmentConfig[treatment] || { startDelay: 100, streamDelay: 100 };
 
     interruptBtn.disabled = false;
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, config.startDelay));
     streamTime = Date.now();
 
     let observedOutput = "";
@@ -147,8 +153,8 @@ document.addEventListener("DOMContentLoaded", function () {
       if (isInterrupted) break;
       observedOutput += chunk + " ";
       assistantParagraph.innerHTML = `<strong>Assistant:</strong> ${observedOutput}`;
-      if (streamDelay) {
-        await new Promise((resolve) => setTimeout(resolve, streamDelay));
+      if (config.streamDelay) {
+        await new Promise((resolve) => setTimeout(resolve, config.streamDelay));
       }
     }
 

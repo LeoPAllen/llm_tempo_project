@@ -1,3 +1,5 @@
+from os import environ
+
 from shared.timed_page import TimedPage
 
 from .models import TASKS, Player, Constants
@@ -7,6 +9,13 @@ def current_task(player: Player):
     return TASKS[player.task_id]
 
 
+def debug_context(player: Player):
+    return dict(
+        show_debug_treatment=environ.get('OTREE_PRODUCTION') != '1',
+        debug_treatment=player.treatment,
+    )
+
+
 class TaskIntroPage(TimedPage):
     def vars_for_template(self):
         task = current_task(self.player)
@@ -14,6 +23,7 @@ class TaskIntroPage(TimedPage):
             task=task,
             round_number=self.round_number,
             total_rounds=Constants.num_rounds,
+            **debug_context(self.player),
         )
 
 
@@ -30,7 +40,7 @@ class PreInteractionTaskPage(TimedPage):
 
     def vars_for_template(self):
         task = current_task(self.player)
-        return dict(task=task, stage_title='Before seeing LLM advice')
+        return dict(task=task, stage_title='Before seeing LLM advice', **debug_context(self.player))
 
     def error_message(self, values):
         task = current_task(self.player)
@@ -60,7 +70,7 @@ class LLMInteraction(TimedPage):
 
     def vars_for_template(self):
         task = current_task(self.player)
-        return dict(task=task, llm_interaction_instructions=task['llm_instruction'])
+        return dict(task=task, llm_interaction_instructions=task['llm_instruction'], **debug_context(self.player))
 
     def js_vars(self):
         task = current_task(self.player)
@@ -88,7 +98,7 @@ class PostInteractionTaskPage(TimedPage):
 
     def vars_for_template(self):
         task = current_task(self.player)
-        return dict(task=task, stage_title='After seeing LLM advice')
+        return dict(task=task, stage_title='After seeing LLM advice', **debug_context(self.player))
 
     def error_message(self, values):
         task = current_task(self.player)
@@ -127,6 +137,7 @@ class TaskMeasuresPage(TimedPage):
             task=task,
             retention_q1_text=task['retention_q1_text'],
             retention_q2_text=task['retention_q2_text'],
+            **debug_context(self.player),
         )
 
 

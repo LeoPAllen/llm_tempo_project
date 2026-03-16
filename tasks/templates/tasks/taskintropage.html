@@ -3,7 +3,10 @@
 
 {% block content %}
 <div class="study-page">
-<div class="study-kicker">Task {{ round_number }} of {{ total_rounds }}</div>
+{% if show_debug_treatment %}
+<div class="debug-badge">Debug only: treatment = {{ debug_treatment }}</div>
+{% endif %}
+<div class="study-kicker">Next Section</div>
 <h3 class="study-title">{{ task.title }}</h3>
 <div class="study-panel">
 <p>{{ task.intro_text }}</p>

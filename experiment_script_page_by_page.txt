@@ -2,7 +2,15 @@ LLM TEMPO EXPERIMENT
 PAGE-BY-PAGE SCRIPT
 
 Purpose
-This file is a working script for the full oTree experiment currently implemented in this project. It is intended as an editable content tracker so wording, order, and measures can be revised without hunting through templates and model files.
+This file is the working script/specification for the full oTree experiment currently implemented in this project. It is intended to be the easiest document for the research team to edit. The goal is that the team can revise wording, ordering, measures, and treatment structure here, then pass the file back for code updates.
+
+How to use this file
+- Treat this file as the human-readable source of truth for participant-facing content and study structure.
+- If the research team changes wording, labels, ordering, conditions, or measures here, those changes can then be wired into the code.
+- This file includes both:
+  participant-facing content
+  implementation notes that should not be shown to participants
+- Participant-facing labels are intentionally neutral and do not explicitly reveal measurement intent.
 
 High-level flow
 1. Consent
@@ -19,7 +27,8 @@ App: consent
 Page class: ConsentPage
 
 Current content
-- Study title: LLM Tempo and Decision-Making
+- Participant-facing kicker: Study Information
+- Study title: AI-Assisted Decision-Making Study
 - Purpose: study about how people interact with LLMs while completing decision-making tasks
 - Participants complete:
   short practice interaction
@@ -45,9 +54,12 @@ App: pre_tasks_measures
 Page class: PracticePage
 
 Current content
+- Participant-facing kicker: Instructions
+- Participant-facing title: Practice Section
 - Participants are told they will complete a series of tasks with help from a custom LLM
-- They are shown a practice prompt about camouflage
-- They are shown a hallucinated LLM answer stating arctic foxes are grey in winter
+- They interact with a mock LLM interface rather than seeing static text
+- They copy/paste a practice prompt about camouflage
+- The mock LLM streams a hallucinated answer stating arctic foxes are grey in winter
 - Attention check question:
   Based on the LLM output, what color are arctic foxes in the winter?
 - Response options:
@@ -66,6 +78,8 @@ App: pre_tasks_measures
 Page class: PreTaskMeasuresPage
 
 Current items
+- Participant-facing kicker: Questions
+- Participant-facing title: Background Questions
 - I am confident in advice provided by AI systems.
 - AI systems are generally reliable sources of guidance.
 - I can trust an AI assistant to provide useful help on unfamiliar tasks.
@@ -110,7 +124,10 @@ Page class: TaskIntroPage
 Current behavior
 - One intro page appears at the start of each task round
 - The order of tasks is randomized per participant
-- The same LLM tempo treatment is assigned across all task rounds for a participant
+- The same LLM timing treatment is assigned across all task rounds for a participant
+- Participant-facing kicker: Next Section
+- Participant-facing title: task title only
+- The page does not explicitly reveal "Task X of N" to participants
 
 Current task pool
 - Ultimatum Game
@@ -132,6 +149,24 @@ Each task uses the same 5-page structure:
 4. Post-LLM response
 5. Post-task measures
 
+Participant-facing label policy
+- Do not explicitly show terms like:
+  retention
+  manipulation check
+  treatment
+  condition
+  pre-task measures
+  post-task measures
+  task X of N
+- Use neutral participant-facing labels instead, such as:
+  Questions
+  Background Questions
+  Final Questions
+  Next Section
+  Your Response
+  Assistant
+  A Few Follow-Up Questions
+
 
 TASK A. Ultimatum Game
 Task id: ultimatum
@@ -143,10 +178,12 @@ Task intro / description
 - If rejected, both get nothing
 
 Pre-LLM response
+- Participant-facing kicker: Your Response
 - Prompt: how much of the 1000 USD would you offer?
 - Allowed range: 0 to 1000
 
 LLM interaction prompt
+- Participant-facing kicker: Assistant
 - "In an Ultimatum Game, if I am chosen as the proposer, how should I split 1000 USD between myself and my partner?"
 
 LLM output summary
@@ -154,11 +191,14 @@ LLM output summary
 - Suggests a 70/30 split
 
 Post-LLM response
+- Participant-facing kicker: Your Response
 - Same decision question again
 
 Post-task measures
-- Retention q1: what happens if responder rejects?
-- Retention q2: what increases rejection rates?
+- Participant-facing kicker: Questions
+- Participant-facing title: A Few Follow-Up Questions
+- Knowledge/comprehension question 1: what happens if responder rejects?
+- Knowledge/comprehension question 2: what increases rejection rates?
 - AI evaluation items:
   reliance
   confidence
@@ -187,10 +227,12 @@ Task intro / description
 - Other person must accept whatever amount is given
 
 Pre-LLM response
+- Participant-facing kicker: Your Response
 - Prompt: how much money would you give to the other person?
 - Allowed range: 0 to 100
 
 LLM interaction prompt
+- Participant-facing kicker: Assistant
 - "In a Dictator Game, how should I split 100 USD between myself and another person?"
 
 LLM output summary
@@ -198,11 +240,13 @@ LLM output summary
 - Mentions fairness, concern for others, self-image, moral values
 
 Post-LLM response
+- Participant-facing kicker: Your Response
 - Same decision question again
 
 Post-task measures
-- Retention q1: what range of giving is common?
-- Retention q2: which factor was not mentioned?
+- Participant-facing kicker: Questions
+- Knowledge/comprehension question 1: what range of giving is common?
+- Knowledge/comprehension question 2: which factor was not mentioned?
 - Same AI evaluation items as other tasks
 
 Scholarly source notes
@@ -226,10 +270,12 @@ Task intro / description
 - Discount rate: 3% annually
 
 Pre-LLM response
+- Participant-facing kicker: Your Response
 - Prompt: estimate the NPV, rounded to nearest whole number
 - Numeric free response
 
 LLM interaction prompt
+- Participant-facing kicker: Assistant
 - "Teach me how to calculate the Net Present Value of a 10-year government bond without solving it for me. The bond has a face value of 1000 USD and a semiannual payment frequency, current discount rate of 3% and a coupon of 4%."
 
 LLM output summary
@@ -239,11 +285,13 @@ LLM output summary
 - Says to sum discounted coupons and face value
 
 Post-LLM response
+- Participant-facing kicker: Your Response
 - Same NPV estimate again
 
 Post-task measures
-- Retention q1: coupon payment every six months
-- Retention q2: annual discount rate used
+- Participant-facing kicker: Questions
+- Knowledge/comprehension question 1: coupon payment every six months
+- Knowledge/comprehension question 2: annual discount rate used
 - Same AI evaluation items as other tasks
 
 Scholarly source notes
@@ -263,10 +311,12 @@ Task intro / description
 - Pulling switch redirects trolley to track with one person
 
 Pre-LLM response
+- Participant-facing kicker: Your Response
 - Prompt: likelihood of pulling the switch
 - Allowed range: 0 to 100
 
 LLM interaction prompt
+- Participant-facing kicker: Assistant
 - "In the trolley problem, a runaway trolley is headed toward five people but I have the option to pull a switch to divert it onto another track, where it would kill one person instead. What should I do? Why?"
 
 LLM output summary
@@ -274,11 +324,13 @@ LLM output summary
 - Notes deontological objection
 
 Post-LLM response
+- Participant-facing kicker: Your Response
 - Same likelihood judgment again
 
 Post-task measures
-- Retention q1: which ethical view supports pulling the switch?
-- Retention q2: how many people would be saved?
+- Participant-facing kicker: Questions
+- Knowledge/comprehension question 1: which ethical view supports pulling the switch?
+- Knowledge/comprehension question 2: how many people would be saved?
 - Same AI evaluation items as other tasks
 
 Scholarly source notes
@@ -299,9 +351,11 @@ Task intro / description
   Option B: 85 USD in 10 days
 
 Pre-LLM response
+- Participant-facing kicker: Your Response
 - Binary choice
 
 LLM interaction prompt
+- Participant-facing kicker: Assistant
 - "What should I consider when choosing between getting 75 USD today or 85 USD in 10 days?"
 
 LLM output summary
@@ -310,11 +364,13 @@ LLM output summary
 - Notes the delayed option is a strong short-term return
 
 Post-LLM response
+- Participant-facing kicker: Your Response
 - Same binary choice again
 
 Post-task measures
-- Retention q1: what was the delayed payment option?
-- Retention q2: what concept describes favoring immediate rewards?
+- Participant-facing kicker: Questions
+- Knowledge/comprehension question 1: what was the delayed payment option?
+- Knowledge/comprehension question 2: what concept describes favoring immediate rewards?
 - Same AI evaluation items as other tasks
 
 Scholarly source notes
@@ -335,12 +391,14 @@ Task intro / description
 - Must sum to exactly 10000 USD
 
 Pre-LLM response
+- Participant-facing kicker: Your Response
 - Stocks amount
 - Bonds amount
 - Cash amount
 - Validation: total must equal 10000
 
 LLM interaction prompt
+- Participant-facing kicker: Assistant
 - "What should I consider when deciding what percentage of my portfolio to allocate to stocks, bonds, and cash?"
 
 LLM output summary
@@ -349,11 +407,13 @@ LLM output summary
 - Gives example 60/30/10 allocation
 
 Post-LLM response
+- Participant-facing kicker: Your Response
 - Same allocation task again
 
 Post-task measures
-- Retention q1: which asset class has greater short-term volatility?
-- Retention q2: what example allocation was given?
+- Participant-facing kicker: Questions
+- Knowledge/comprehension question 1: which asset class has greater short-term volatility?
+- Knowledge/comprehension question 2: what example allocation was given?
 - Same AI evaluation items as other tasks
 
 Scholarly source notes
@@ -371,6 +431,8 @@ App: post_tasks_measures
 Page class: PostTaskMeasuresPage
 
 Current items
+- Participant-facing kicker: Final Questions
+- Participant-facing title: Final Questions
 - Across all tasks, the AI assistant was useful.
 - Across all tasks, the AI assistant was easy to use.
 - Across all tasks, I trusted the AI assistant.
@@ -398,6 +460,8 @@ App: post_tasks_measures
 Page class: DemographicsPage
 
 Current items
+- Participant-facing kicker: Final Questions
+- Participant-facing title: Demographic Survey
 - Age
 - Gender
   Male
@@ -421,6 +485,7 @@ App: conclusion
 Page class: Conclusion
 
 Current content
+- Participant-facing kicker: Thank You
 - Thank you for participating in the study.
 - Click Next when you are ready to exit the survey.
 
@@ -429,12 +494,27 @@ IMPLEMENTATION NOTES
 
 Randomization
 - Task order is currently fully randomized across the 6 implemented tasks
-- LLM tempo treatment is assigned once per participant and held constant across tasks
+- LLM timing treatment is assigned once per participant and held constant across tasks
 
-Current LLM tempo treatments
-- slow_stream
-- medium_stream
-- fast_stream
+Treatment specification
+- This experiment currently uses a 2x2 timing design:
+  Factor 1: start latency
+  Factor 2: stream speed
+- Treatments are:
+  A: Fast start, fast stream
+  B: Slow start, fast stream
+  C: Fast start, slow stream
+  D: Slow start, slow stream
+
+Current LLM timing treatments
+- A: Fast start, fast stream
+  0.1 second initial delay, 10 tokens per second
+- B: Slow start, fast stream
+  2.0 second initial delay, 10 tokens per second
+- C: Fast start, slow stream
+  0.1 second initial delay, 2 tokens per second
+- D: Slow start, slow stream
+  2.0 second initial delay, 2 tokens per second
 
 Validation rules currently implemented
 - Ultimatum response: 0 to 1000
@@ -446,6 +526,21 @@ Known content status
 - The experiment is now implemented end-to-end
 - Some measure batteries are pragmatic placeholders rather than finalized literature replications
 - This file should be updated alongside any wording or flow changes in the oTree code
+
+Recommended editing conventions for future revisions
+- If you want to change participant-facing text, edit the relevant "Current content" section.
+- If you want to change what participants should or should not see, edit the "Participant-facing" lines explicitly.
+- If you want to change the treatment design, update the "Treatment specification" section first.
+- If you want to change the order or inclusion of tasks, update both:
+  High-level flow
+  Current task pool
+- If you want the code updated from this file in a later pass, it is best to keep:
+  page names
+  task ids
+  treatment labels
+  participant-facing text
+  implementation notes
+  clearly separated.
 
 Sources referenced in original draft document
 - Jian, J. Y., Bisantz, A. M., & Drury, C. G. (2000). Trust in automation scale foundation.
