@@ -1,11 +1,66 @@
 # llm_tempo_project
-llm_tempo_project
 
-I havn't tested the set-up on a new machine, let me know if there are problems
+oTree experiment with app flow:
+`consent -> pre_tasks_measures -> ultimatum_game -> post_tasks_measures -> conclusion`
 
-1. set up a virtual python environment `conda create -n llm_tempo_project` (venv is fine too)
-2. install the python requirements `pip install -r requirements.txt`
-3. spin up the experiment (developent) server locally (`otree devserver`)
-4. navigate to the hosted experiment (probably on `localhost:8000`)
+## Local setup
 
-To make and test changes: make a change in the code, disconnect the server (`crtl+c`), remove the database (`rm db.sqlite3` ), cached files (`find . -name "__pycache__" -exec rm -r {} +`), and restart the server (`otree devserver`)
+1. Open a terminal in this folder (`llm_tempo_project`).
+2. Activate your usual Conda environment:
+
+```bash
+conda activate otree_env
+```
+
+Alternative (if you do not want Conda for this project):
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+3. Install dependencies in the active environment.
+
+```bash
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+4. Set an admin password for oTree.
+
+```bash
+export OTREE_ADMIN_PASSWORD="change-me"
+```
+
+## Run locally
+
+Start the development server:
+
+```bash
+otree devserver
+```
+
+Then open:
+- Participant/demo links: `http://localhost:8000`
+- Admin page: `http://localhost:8000/admin` (username: `admin`, password: `OTREE_ADMIN_PASSWORD`)
+
+## Test your changes
+
+Typical local test loop:
+
+1. Edit code.
+2. Stop server with `Ctrl+C`.
+3. (Optional clean reset) remove local db and Python cache:
+
+```bash
+rm -f db.sqlite3
+find . -name "__pycache__" -type d -prune -exec rm -rf {} +
+```
+
+4. Restart with `otree devserver`.
+5. Re-run through the participant flow in browser.
+
+## Notes
+
+- `Procfile` is for production process types (`prodserver1of2`/`prodserver2of2`), not required for local dev.
+- Keep your virtual environment active whenever running `otree` commands.
