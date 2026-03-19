@@ -1,0 +1,175 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block content %}
+<div class="study-page">
+{% if show_debug_treatment %}
+<div class="debug-badge">Debug only: treatment = {{ debug_treatment }}</div>
+{% endif %}
+
+<p>Click <strong>Ask AI</strong> to send the question below and see the AI's advice.</p>
+
+<div id="chat-container" class="study-chat-container">
+  <div id="conversation" class="study-chat">
+    <p id="chat-placeholder" class="chat-placeholder">Your conversation with the AI will appear here.</p>
+  </div>
+</div>
+
+<div id="prompt-area" class="study-prompt-area">
+  <div class="study-prompt-preview">
+    <span class="study-label">Question for the AI:</span>
+    <p id="prompt-text">{{ llm_prompt }}</p>
+  </div>
+  <div class="study-actions">
+    <button type="button" id="ask-btn" class="btn-primary">Ask AI</button>
+    <button type="button" id="interrupt-btn" class="btn-secondary" disabled style="display:none;">Stop</button>
+  </div>
+</div>
+
+<input type="hidden" name="io_history" id="io-history">
+<input type="hidden" name="interrupt_latency_submit" id="interrupt-latency-submit">
+<input type="hidden" name="interrupt_latency_stream" id="interrupt-latency-stream">
+<input type="hidden" name="interrupted_stream" id="interrupted-stream">
+
+{{ formfield_errors 'io_history' }}
+
+<button type="submit" id="next-button" class="btn-next" disabled style="opacity:0.5; pointer-events:none;">Next</button>
+</div>
+{% endblock %}
+
+{% block js_vars %}
+{{ super() }}
+{% endblock %}
+
+{% block global_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var treatment = js_vars?.treatment || "undefined";
+  var treatmentConfig = {
+    A_fast_start_fast_stream: { startDelay: 100, streamDelay: 100 },
+    B_slow_start_fast_stream: { startDelay: 2000, streamDelay: 100 },
+    C_fast_start_slow_stream: { startDelay: 100, streamDelay: 300 },
+    D_slow_start_slow_stream: { startDelay: 2000, streamDelay: 300 }
+  };
+
+  var askBtn = document.getElementById("ask-btn");
+  var interruptBtn = document.getElementById("interrupt-btn");
+  var promptText = document.getElementById("prompt-text");
+  var promptArea = document.getElementById("prompt-area");
+  var conversationDiv = document.getElementById("conversation");
+  var historyField = document.getElementById("io-history");
+  var nextBtn = document.getElementById("next-button");
+  var latencySubmitField = document.getElementById("interrupt-latency-submit");
+  var latencyStreamField = document.getElementById("interrupt-latency-stream");
+  var interruptedField = document.getElementById("interrupted-stream");
+
+  var isStreaming = false;
+  var isInterrupted = false;
+  var submitTime = null;
+  var streamTime = null;
+  var submitted = false;
+  var responseTimeout = null;
+
+  askBtn.onclick = function () {
+    if (submitted) return;
+    submitted = true;
+
+    var msg = promptText.textContent.trim();
+
+    latencySubmitField.value = "";
+    latencyStreamField.value = "";
+    interruptedField.value = "";
+    historyField.value = "";
+
+    isInterrupted = false;
+    submitTime = Date.now();
+    liveSend({ input: msg });
+
+    askBtn.disabled = true;
+    askBtn.textContent = "Waiting...";
+
+    responseTimeout = setTimeout(function () {
+      if (!isStreaming && nextBtn.disabled) {
+        nextBtn.disabled = false;
+        nextBtn.style.opacity = "1";
+        nextBtn.style.pointerEvents = "auto";
+      }
+    }, 15000);
+  };
+
+  interruptBtn.onclick = function () {
+    if (!isStreaming || isInterrupted) return;
+    isInterrupted = true;
+    interruptBtn.disabled = true;
+    var now = Date.now();
+    latencySubmitField.value = now - submitTime;
+    if (streamTime) {
+      latencyStreamField.value = now - streamTime;
+    }
+  };
+
+  liveRecv = async function (data) {
+    clearTimeout(responseTimeout);
+    isStreaming = true;
+    streamTime = null;
+
+    var userIn = data.input;
+    var fullOut = data.output;
+
+    // Remove placeholder
+    var placeholder = document.getElementById("chat-placeholder");
+    if (placeholder) placeholder.remove();
+
+    // Show user message
+    var userBubble = document.createElement("div");
+    userBubble.className = "chat-bubble chat-user";
+    userBubble.innerHTML = '<div class="chat-sender">You</div><div class="chat-text">' + userIn + '</div>';
+    conversationDiv.appendChild(userBubble);
+
+    // Show assistant message
+    var assistantBubble = document.createElement("div");
+    assistantBubble.className = "chat-bubble chat-assistant";
+    assistantBubble.innerHTML = '<div class="chat-sender">AI Assistant</div><div class="chat-text"></div>';
+    conversationDiv.appendChild(assistantBubble);
+    var assistantText = assistantBubble.querySelector(".chat-text");
+
+    // Hide prompt area
+    promptArea.style.display = "none";
+
+    var words = fullOut.split(" ");
+    var config = treatmentConfig[treatment] || { startDelay: 100, streamDelay: 100 };
+
+    interruptBtn.disabled = false;
+    interruptBtn.style.display = "inline-block";
+    await new Promise(function (resolve) { setTimeout(resolve, config.startDelay); });
+    streamTime = Date.now();
+
+    var observedOutput = "";
+    for (var i = 0; i < words.length; i++) {
+      if (isInterrupted) break;
+      observedOutput += words[i] + " ";
+      assistantText.textContent = observedOutput;
+      conversationDiv.scrollTop = conversationDiv.scrollHeight;
+      if (config.streamDelay) {
+        await new Promise(function (resolve) { setTimeout(resolve, config.streamDelay); });
+      }
+    }
+
+    isStreaming = false;
+    interruptBtn.disabled = true;
+    interruptBtn.style.display = "none";
+    interruptedField.value = isInterrupted ? "True" : "False";
+
+    // Enable Next
+    nextBtn.disabled = false;
+    nextBtn.style.opacity = "1";
+    nextBtn.style.pointerEvents = "auto";
+
+    historyField.value = JSON.stringify([{
+      input: userIn,
+      output: observedOutput.trim()
+    }]);
+  };
+});
+</script>
+{% endblock %}

@@ -1,23 +1,23 @@
 {% extends "global/Page.html" %}
 {% block content %}
 <div class="study-page">
-<div class="study-kicker">Study Information</div>
 
-<h3 class="study-title">Consent to Participate in Research Study</h3>
+<h3 class="study-title">Welcome to Our Study</h3>
 
-<p><strong>Study Title:</strong> AI-Assisted Decision-Making Study</p>
+<p>Thank you for your interest in this research. In this study, you will work through a series of decision-making tasks. For each task, you will have access to an AI assistant that can provide advice.</p>
 
-<p><strong>Purpose of the Study:</strong> You are invited to participate in a research study about how people interact with large language model systems while completing decision-making tasks.</p>
+<p>The study takes approximately <strong>15 minutes</strong> to complete.</p>
 
-<p><strong>What You Will Be Asked to Do:</strong> You will complete a short practice interaction, answer a few background questions, work through a series of tasks with the support of an AI assistant, and then complete a brief post-study survey. The study takes approximately {{ estimated_minutes }} minutes.</p>
-
-<p><strong>Voluntary Participation:</strong> Participation is voluntary. You may stop at any time, but you must finish the full study to receive payment if payment is tied to completion.</p>
-
-<p><strong>Confidentiality:</strong> Your responses will be anonymized and used only for scientific research. No direct identifying information will be collected in the survey itself.</p>
-
-<p><strong>Contact:</strong> If you have questions, contact {{ contact_email }}.</p>
-
-<p><strong>Consent:</strong> Please confirm that you are at least 18 years old and agree to participate in this study.</p>
+<div class="study-panel">
+<p><strong>A few things to know before we begin:</strong></p>
+<ul style="margin: 0.5rem 0 0; padding-left: 1.2rem;">
+<li>Your participation is voluntary and you may stop at any time.</li>
+<li>Your responses are anonymized and used only for academic research.</li>
+<li>You must be at least 18 years old to participate.</li>
+<li>Please read all instructions and AI responses carefully. The study includes comprehension checks, and you must pass them to complete the study and receive payment.</li>
+<li>If you have questions, contact {{ contact_email }}.</li>
+</ul>
+</div>
 
 {{ formfields }}
 {{ next_button }}

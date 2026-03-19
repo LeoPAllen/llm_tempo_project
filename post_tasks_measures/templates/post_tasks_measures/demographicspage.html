@@ -3,10 +3,51 @@
 
 {% block content %}
 <div class="study-page">
-<div class="study-kicker">Final Questions</div>
-<h3 class="study-title">Demographic Survey</h3>
+<p>Just a few more questions before the end of the survey.</p>
 
-{{ formfields }}
+{{ formfield 'age' }}
+{{ formfield 'gender' }}
+{{ formfield 'education_level' }}
+{{ formfield 'employment_status' }}
+{{ formfield 'income_range' }}
+
 {{ next_button }}
 </div>
+{% endblock %}
+
+{% block global_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var ageInput = document.querySelector('input[name="age"]');
+  if (ageInput) {
+    ageInput.type = "number";
+    ageInput.min = "18";
+    ageInput.max = "90";
+    ageInput.placeholder = "18–90";
+
+    // Add inline error message element
+    var errorMsg = document.createElement("div");
+    errorMsg.style.cssText = "color: #e53e3e; font-size: 0.85rem; margin-top: 0.25rem; display: none;";
+    ageInput.parentNode.appendChild(errorMsg);
+
+    ageInput.addEventListener("input", function () {
+      var val = ageInput.value.trim();
+      if (val === "") {
+        errorMsg.style.display = "none";
+      } else if (!/^\d+$/.test(val)) {
+        errorMsg.textContent = "Please enter a whole number.";
+        errorMsg.style.display = "block";
+      } else {
+        var num = parseInt(val);
+        if (num < 18 || num > 90) {
+          errorMsg.textContent = "Please enter an age between 18 and 90.";
+          errorMsg.style.display = "block";
+        } else {
+          errorMsg.style.display = "none";
+        }
+      }
+    });
+  }
+});
+</script>
 {% endblock %}

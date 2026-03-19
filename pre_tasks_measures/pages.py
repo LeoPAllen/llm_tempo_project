@@ -1,8 +1,14 @@
 from shared.timed_page import TimedPage
 
+from tasks.models import Constants as TaskConstants
+
+
+PRACTICE_PROMPT = (
+    'What is a common example of camouflage in the animal kingdom?'
+)
 
 PRACTICE_OUTPUT = (
-    'Animals like the arctic fox use camouflage, such as changing fur color from grey in '
+    'Animals like the arctic fox use camouflage, such as changing fur color from white in '
     'the winter to brown in the summer, to blend into their environment.'
 )
 
@@ -13,25 +19,7 @@ class PracticePage(TimedPage):
 
     def vars_for_template(self):
         return dict(
-            practice_prompt=(
-                'Summarize the main idea of the following paragraph: Camouflage is a vital survival '
-                'strategy used by many species in the animal kingdom. It allows organisms to blend '
-                'into their environments, reducing the likelihood of being detected by predators or '
-                'prey. This biological adaptation takes many forms. In arctic regions, for example, '
-                'the arctic fox changes the color of its fur with the seasons-white in the snowy '
-                'winter and brown in the summer-to match its surroundings. In tropical rainforests, '
-                'stick insects and leaf-tailed geckos closely resemble twigs, bark, or leaves, making '
-                'them extremely difficult to spot. Some marine animals, like the octopus, can change '
-                'both the color and texture of their skin in real time to mimic coral, sand, or rocks. '
-                'These adaptations have evolved over thousands or even millions of years through '
-                'natural selection: individuals that were slightly better camouflaged were more likely '
-                'to survive and reproduce. Over generations, these traits became more common in the '
-                "population. Camouflage doesn't only protect animals from predators-it can also help "
-                'predators sneak up on prey. Tigers, for instance, use their striped fur to blend into '
-                'tall grasses, helping them get close enough to ambush their target. Overall, camouflage '
-                'is a dynamic and diverse evolutionary tool that plays a crucial role in the ongoing '
-                'struggle for survival across many ecosystems.'
-            ),
+            practice_prompt=PRACTICE_PROMPT,
             llm_output=PRACTICE_OUTPUT,
         )
 
@@ -42,23 +30,26 @@ class PracticePage(TimedPage):
     def live_method(player, data):
         return {player.id_in_group: dict(output=PRACTICE_OUTPUT, input=data.get('input', ''))}
 
-
-class PreTaskMeasuresPage(TimedPage):
-    form_model = 'player'
-    form_fields = [
-        'trust_automation_confident',
-        'trust_automation_reliable',
-        'trust_automation_trust',
-        'need_for_cognition_effort',
-        'need_for_cognition_enjoy',
-        'need_for_cognition_avoid',
-        'prior_llm_accuracy',
-        'prior_algo_vs_human',
-        'prior_llm_used_before',
-        'prior_llm_judgment_conf',
-        'self_rated_numeracy',
-        'self_rated_reflection',
-    ]
+    def before_next_page(self):
+        if self.player.practice_attention_check != 'white':
+            self.participant.vars['failed_attention'] = True
+        else:
+            self.participant.vars['failed_attention'] = False
 
 
-page_sequence = [PracticePage, PreTaskMeasuresPage]
+class FailedAttentionPage(TimedPage):
+    def is_displayed(self):
+        return self.participant.vars.get('failed_attention', False)
+
+
+class TransitionPage(TimedPage):
+    def is_displayed(self):
+        if self.participant.vars.get('failed_attention', False):
+            return False
+        return super().is_displayed()
+
+    def vars_for_template(self):
+        return dict(total_rounds=TaskConstants.num_rounds)
+
+
+page_sequence = [PracticePage, FailedAttentionPage, TransitionPage]

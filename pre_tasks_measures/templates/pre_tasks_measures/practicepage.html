@@ -3,79 +3,104 @@
 
 {% block content %}
 <div class="study-page">
-<div class="study-kicker">Instructions</div>
-<h3 class="study-title">Practice Section</h3>
+<h3 class="study-title">Practice Round</h3>
 
-<p class="study-lead">In this experiment, you will complete a series of tasks with help from a custom large language model (LLM).</p>
+<p>In this study, you will complete a series of decision-making tasks with the help of an AI assistant. Before we start, let's do a quick practice so you can see how the AI tool works.</p>
 
-<p>For this practice round, copy and paste the prompt below into the mock LLM interface, review the output, and then answer the question that follows.</p>
+<p>Below is a sample question. Click <strong>Ask AI</strong> to send it to the AI and see its response, then answer the question that follows.</p>
 
-<div class="study-panel">
-<p><span class="study-label">Prompt to paste into the LLM:</span></p>
-<p>{{ practice_prompt }}</p>
+<div id="chat-container" class="study-chat-container">
+  <div id="conversation" class="study-chat">
+    <p id="chat-placeholder" class="chat-placeholder">Your conversation with the AI will appear here.</p>
+  </div>
 </div>
 
-<textarea id="user-input" rows="4" cols="70" placeholder="Paste the prompt here..."></textarea><br>
-<div class="study-actions">
-<button type="button" id="submit-btn">Submit</button>
+<div id="prompt-area" class="study-prompt-area">
+  <div class="study-prompt-preview">
+    <span class="study-label">Question for the AI:</span>
+    <p id="prompt-text">{{ practice_prompt }}</p>
+  </div>
+  <div class="study-actions">
+    <button type="button" id="ask-btn" class="btn-primary">Ask AI</button>
+  </div>
 </div>
-
-<div id="conversation" class="study-chat"></div>
 
 <input type="hidden" name="practice_io_history" id="practice-io-history">
 
+<div id="attention-section" style="display: none; margin-top: 1.5rem;">
 {{ formfield 'practice_attention_check' }}
-{{ next_button }}
+</div>
+
+<button type="submit" id="next-button" class="btn-next" disabled style="opacity: 0.5; pointer-events: none;">Next</button>
 </div>
 {% endblock %}
 
 {% block global_scripts %}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  const submitBtn = document.getElementById("submit-btn");
-  const inputField = document.getElementById("user-input");
-  const conversationDiv = document.getElementById("conversation");
-  const historyField = document.getElementById("practice-io-history");
-  const outputText = js_vars?.practice_output || "";
+  var askBtn = document.getElementById("ask-btn");
+  var promptText = document.getElementById("prompt-text");
+  var promptArea = document.getElementById("prompt-area");
+  var conversationDiv = document.getElementById("conversation");
+  var historyField = document.getElementById("practice-io-history");
+  var nextBtn = document.getElementById("next-button");
+  var attentionSection = document.getElementById("attention-section");
+  var outputText = js_vars?.practice_output || "";
 
-  let history = [];
-  let submitted = false;
+  var submitted = false;
 
-  submitBtn.onclick = async function () {
+  askBtn.onclick = function () {
     if (submitted) return;
-
-    const msg = inputField.value.trim();
-    if (!msg) return;
-
     submitted = true;
+
+    var msg = promptText.textContent.trim();
+    askBtn.disabled = true;
+    askBtn.textContent = "Waiting...";
     liveSend({ input: msg });
-    submitBtn.disabled = true;
-    inputField.disabled = true;
   };
 
   liveRecv = async function (data) {
-    const userParagraph = document.createElement("p");
-    userParagraph.innerHTML = `<strong>You:</strong> ${data.input}`;
-    conversationDiv.appendChild(userParagraph);
+    var userIn = data.input;
+    var fullOut = data.output;
 
-    const assistantParagraph = document.createElement("p");
-    assistantParagraph.innerHTML = "<strong>Assistant:</strong> ";
-    conversationDiv.appendChild(assistantParagraph);
+    // Remove placeholder
+    var placeholder = document.getElementById("chat-placeholder");
+    if (placeholder) placeholder.remove();
 
-    const words = outputText.split(" ");
-    let observedOutput = "";
+    // Show user message
+    var userBubble = document.createElement("div");
+    userBubble.className = "chat-bubble chat-user";
+    userBubble.innerHTML = '<div class="chat-sender">You</div><div class="chat-text">' + userIn + '</div>';
+    conversationDiv.appendChild(userBubble);
 
-    for (const word of words) {
-      observedOutput += word + " ";
-      assistantParagraph.innerHTML = `<strong>Assistant:</strong> ${observedOutput}`;
-      await new Promise((resolve) => setTimeout(resolve, 100));
+    // Show assistant message
+    var assistantBubble = document.createElement("div");
+    assistantBubble.className = "chat-bubble chat-assistant";
+    assistantBubble.innerHTML = '<div class="chat-sender">AI Assistant</div><div class="chat-text"></div>';
+    conversationDiv.appendChild(assistantBubble);
+    var assistantText = assistantBubble.querySelector(".chat-text");
+
+    // Hide prompt area
+    promptArea.style.display = "none";
+
+    // Stream words
+    var words = fullOut.split(" ");
+    var observedOutput = "";
+    for (var i = 0; i < words.length; i++) {
+      observedOutput += words[i] + " ";
+      assistantText.textContent = observedOutput;
+      conversationDiv.scrollTop = conversationDiv.scrollHeight;
+      await new Promise(function (resolve) { setTimeout(resolve, 100); });
     }
 
-    history.push({
-      input: data.input,
-      output: observedOutput.trim()
-    });
-    historyField.value = JSON.stringify(history);
+    // Save history
+    historyField.value = JSON.stringify([{ input: userIn, output: observedOutput.trim() }]);
+
+    // Show attention check and enable Next
+    attentionSection.style.display = "block";
+    nextBtn.disabled = false;
+    nextBtn.style.opacity = "1";
+    nextBtn.style.pointerEvents = "auto";
   };
 });
 </script>

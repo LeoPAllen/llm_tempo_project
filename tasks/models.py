@@ -1,5 +1,6 @@
 import json
 import random
+import itertools
 
 from otree.api import BaseConstants, BaseSubsession, BaseGroup, BasePlayer, models, widgets
 
@@ -13,240 +14,89 @@ GLOBAL_TREATMENTS = [
 LIKERT_7 = [(i, str(i)) for i in range(1, 8)]
 
 TASKS = {
-    'ultimatum': {
-        'title': 'Ultimatum Game',
+    'trolley': {
+        'title': 'Decision Task',
         'response_type': 'numeric',
         'intro_text': (
-            'In this task, you will take the role of the proposer in the Ultimatum Game. You have '
-            'been given 1000 USD, which you must divide between yourself and another participant. '
-            'The responder can accept or reject your offer. If the responder accepts, both of you '
-            'receive the proposed amounts. If the responder rejects, neither of you receives anything.'
+            'A runaway trolley is heading toward five people who are tied up and cannot move. '
+            'If you pull a switch, the trolley will be redirected onto another track where it '
+            'would kill one person instead.'
         ),
-        'response_prompt': (
-            'Please indicate how much of the 1000 USD you would offer to the responder. '
-            'Do not use a search engine or any third-party LLM to inform your choice.'
-        ),
-        'llm_instruction': (
-            'Interact with the LLM assistant by pasting in this exact question: '
-            '"In an Ultimatum Game, if I am chosen as the proposer, how should I split 1000 USD '
-            'between myself and my partner?"'
+        'response_prompt': 'How likely would you be to pull the switch?',
+        'response_range': '0 = definitely would not, 100 = definitely would',
+        'llm_prompt': (
+            'A runaway trolley is heading toward five people. I can pull a switch to divert it '
+            'to another track where it would kill one person instead. What should I do?'
         ),
         'llm_output': (
-            'In the Ultimatum Game, your goal is to maximize your own gain while ensuring the '
-            'responder accepts the offer. Empirical studies show that offers below 20% to 30% are '
-            'frequently rejected due to perceived unfairness. A commonly accepted and empirically '
-            'supported offer is a 70/30 split: 700 USD for yourself and 300 USD for the responder.'
+            'I recommend pulling the switch. Saving five lives at the cost of one is the '
+            'better outcome.'
         ),
-        'retention_q1_text': 'In the Ultimatum Game, what happens if the responder rejects the offer?',
-        'retention_q1_choices': [
-            ('both_zero', 'Both players get nothing'),
-            ('responder_only', 'Only the responder gets the amount offered'),
-            ('proposer_full', 'The proposer gets the full amount'),
-            ('new_offer', 'The responder makes a new offer'),
-        ],
-        'retention_q2_text': 'Which factor most increases rejection rates in the Ultimatum Game?',
-        'retention_q2_choices': [
-            ('stakes', 'High stakes'),
-            ('reputation', 'Reputation'),
-            ('unfair_splits', 'Unfair splits'),
-            ('random_assignment', 'Random assignment'),
-        ],
+        'llm_recommendation': 100,
     },
     'dictator': {
-        'title': 'Dictator Game',
+        'title': 'Decision Task',
         'response_type': 'numeric',
         'intro_text': (
-            'In this task, you will play the role of dictator in a Dictator Game. You have been '
-            'given 100 USD to divide between yourself and another person. The other person has no '
-            'input and must accept whatever amount you decide to give them.'
+            'You have been given 100 USD to divide between yourself and another person. '
+            'The other person has no input and must accept whatever amount you decide to give them.'
         ),
-        'response_prompt': (
-            'Please indicate how much money you would give to the other person. Do not use a search '
-            'engine or any third-party LLM to inform your choice.'
-        ),
-        'llm_instruction': (
-            'Interact with the LLM assistant by copying and pasting this exact question: '
-            '"In a Dictator Game, how should I split 100 USD between myself and another person?"'
+        'response_prompt': 'How much of the 100 USD would you give to the other person?',
+        'response_range': '0 to 100',
+        'llm_prompt': (
+            'I have 100 USD to split between myself and another person. '
+            'They must accept whatever I give. How much should I give?'
         ),
         'llm_output': (
-            'In the Dictator Game, your choice determines both your own outcome and the amount '
-            'received by the other person. Many people choose to give something rather than nothing, '
-            'with common amounts ranging from 10% to 50% of the total, but there is no obligation '
-            'to do so. People often consider fairness norms, concern for others well-being, and how '
-            'their choices align with their self-image or moral values.'
+            'I recommend giving 30 USD. This balances fairness with self-interest, '
+            'and is in line with what most people consider reasonable.'
         ),
-        'retention_q1_text': 'In the Dictator Game, what range of giving is common?',
-        'retention_q1_choices': [
-            ('0_10', '0% to 10%'),
-            ('10_50', '10% to 50%'),
-            ('20_40', '20% to 40%'),
-            ('25_75', '25% to 75%'),
-        ],
-        'retention_q2_text': 'Which factor was not mentioned as something people often consider?',
-        'retention_q2_choices': [
-            ('fairness', 'Fairness norms'),
-            ('wellbeing', "Concern for others' well-being"),
-            ('legal', 'Potential legal consequences'),
-            ('self_image', 'Self-image'),
-        ],
-    },
-    'npv': {
-        'title': 'Net Present Value',
-        'response_type': 'numeric',
-        'intro_text': (
-            'In this task, you must determine the value of a government bond by calculating its Net '
-            'Present Value. The bond has a face value of 1000 USD, a coupon rate of 4%, and pays '
-            'interest semiannually for 10 years. The current discount rate is 3% annually. The bond '
-            'pays 20 USD every six months for 20 periods, and repays the 1000 USD face value at '
-            'maturity.'
-        ),
-        'response_prompt': (
-            'Please estimate the Net Present Value of the asset. Round your answer to the nearest '
-            'whole number, and do not use a search engine or any third-party LLM to inform your choice.'
-        ),
-        'llm_instruction': (
-            'Interact with the LLM assistant by copying and pasting this exact question: '
-            '"Teach me how to calculate the Net Present Value of a 10-year government bond without '
-            'solving it for me. The bond has a face value of 1000 USD and a semiannual payment '
-            'frequency, current discount rate of 3% and a coupon of 4%."'
-        ),
-        'llm_output': (
-            'To calculate the bond value, discount each future cash flow to the present using the '
-            'given discount rate. Because the bond pays semiannually, divide both the annual coupon '
-            'rate and the annual discount rate by two. That gives 20 USD coupon payments and a 1.5% '
-            'discount rate per period across 20 periods. Discount each coupon payment and the final '
-            '1000 USD repayment, then sum those present values.'
-        ),
-        'retention_q1_text': 'What is the coupon payment made every six months?',
-        'retention_q1_choices': [
-            ('10', '10 USD'),
-            ('20', '20 USD'),
-            ('30', '30 USD'),
-            ('40', '40 USD'),
-        ],
-        'retention_q2_text': 'What annual discount rate is used in this task?',
-        'retention_q2_choices': [
-            ('1_5', '1.5%'),
-            ('3', '3%'),
-            ('4', '4%'),
-            ('20', '20%'),
-        ],
-    },
-    'trolley': {
-        'title': 'Trolley Problem',
-        'response_type': 'numeric',
-        'intro_text': (
-            'In this task, you must consider an ethical dilemma known as the Trolley Problem. A '
-            'runaway trolley is heading toward five people who are tied up and cannot move. If you '
-            'pull a switch, the trolley will be redirected onto another track where it would kill one '
-            'person instead.'
-        ),
-        'response_prompt': (
-            'Please indicate how likely you would be to pull the switch on a 0 to 100 scale. Do not '
-            'use a search engine or any third-party LLM to inform your choice.'
-        ),
-        'llm_instruction': (
-            'Interact with the LLM assistant by copying and pasting this exact question: '
-            '"In the trolley problem, a runaway trolley is headed toward five people but I have the '
-            'option to pull a switch to divert it onto another track, where it would kill one person '
-            'instead. What should I do? Why?"'
-        ),
-        'llm_output': (
-            'Pulling the switch is often seen as the morally right choice because it saves five lives '
-            'at the cost of one. This reflects utilitarian reasoning, which prioritizes the greatest '
-            'good for the greatest number. However, some argue it is wrong to actively cause harm even '
-            'for a better outcome, which reflects deontological ethics.'
-        ),
-        'retention_q1_text': 'According to the LLM output, which ethical view supports pulling the switch?',
-        'retention_q1_choices': [
-            ('utilitarian', 'Utilitarian reasoning'),
-            ('deontological', 'Deontological ethics'),
-            ('virtue', 'Virtue ethics'),
-            ('egoism', 'Ethical egoism'),
-        ],
-        'retention_q2_text': 'How many people would be saved if you pulled the switch?',
-        'retention_q2_choices': [
-            ('1', '1 person'),
-            ('4', '4 people'),
-            ('5', '5 people'),
-            ('6', '6 people'),
-        ],
+        'llm_recommendation': 30,
     },
     'time_preference': {
-        'title': 'Time Preference',
-        'response_type': 'choice',
+        'title': 'Decision Task',
+        'response_type': 'numeric',
         'intro_text': (
-            'Imagine you have just completed a brief online consulting task. As payment, you can '
-            'choose between 75 USD today and 85 USD in 10 days. Both payments are guaranteed.'
+            'Imagine you have just completed a brief online task. As payment, you can receive '
+            '75 USD today, or you can choose to wait 10 days for a larger amount. '
+            'Both payments are guaranteed.'
         ),
         'response_prompt': (
-            'Indicate your choice. Do not use a search engine or any third-party LLM to inform your choice.'
+            'What is the minimum amount you would need to receive in 10 days to prefer '
+            'waiting over receiving 75 USD today?'
         ),
-        'choice_options': [
-            ('option_a', 'Option A: Receive 75 USD today'),
-            ('option_b', 'Option B: Receive 85 USD in 10 days'),
-        ],
-        'llm_instruction': (
-            'Interact with the LLM assistant by copying and pasting this exact question: '
-            '"What should I consider when choosing between getting 75 USD today or 85 USD in 10 days?"'
+        'response_range': '75 to 200',
+        'llm_prompt': (
+            'I can receive 75 USD today or wait 10 days for a larger amount. '
+            'What is the minimum I should wait for?'
         ),
         'llm_output': (
-            'This decision involves intertemporal choice, where you trade off a smaller reward now '
-            'for a larger reward later. Many people favor immediate rewards because they feel more '
-            'certain or emotionally satisfying, a pattern called present bias. In this case, waiting '
-            '10 days for an extra 10 USD represents a strong short-term return.'
+            'I recommend waiting for anything above 78 USD. Even a small premium is worth a '
+            '10-day wait since the payment is guaranteed and the effective return is very high.'
         ),
-        'retention_q1_text': 'What was the delayed payment option in this task?',
-        'retention_q1_choices': [
-            ('80_5', '80 USD in 5 days'),
-            ('85_10', '85 USD in 10 days'),
-            ('90_30', '90 USD in 30 days'),
-            ('75_10', '75 USD in 10 days'),
-        ],
-        'retention_q2_text': 'What concept did the LLM mention to describe favoring immediate rewards?',
-        'retention_q2_choices': [
-            ('present_bias', 'Present bias'),
-            ('loss_aversion', 'Loss aversion'),
-            ('anchoring', 'Anchoring'),
-            ('mental_accounting', 'Mental accounting'),
-        ],
+        'llm_recommendation': 78,
     },
-    'portfolio': {
-        'title': 'Asset Allocation',
-        'response_type': 'allocation',
+    'gneezy_potters': {
+        'title': 'Decision Task',
+        'response_type': 'numeric',
         'intro_text': (
-            'In this task, you will make a one-time portfolio allocation decision. You are responsible '
-            'for managing 10000 USD and must allocate it across stocks, bonds, and cash using whole '
-            'dollar amounts that sum exactly to 10000 USD.'
+            'You are given 100 USD. You can invest any amount (0 to 100) in a risky asset. '
+            'The risky asset has a 50% chance of returning 2.5 times your investment '
+            'and a 50% chance of losing your entire investment. '
+            'Any amount you do not invest is yours to keep. '
+            'For example, if you invest 0, you keep the full 100 USD.'
         ),
-        'response_prompt': (
-            'Carefully consider your preferences for risk and return before submitting your allocation.'
-        ),
-        'llm_instruction': (
-            'Interact with the LLM assistant by copying and pasting this exact question: '
-            '"What should I consider when deciding what percentage of my portfolio to allocate to '
-            'stocks, bonds, and cash?"'
+        'response_prompt': 'How much of the 100 USD would you invest in the risky asset?',
+        'response_range': '0 to 100',
+        'llm_prompt': (
+            'I have 100 USD. I can invest any amount in a risky asset with a 50% chance of '
+            '2.5x return and a 50% chance of losing it. How much should I invest?'
         ),
         'llm_output': (
-            'When deciding how to allocate a portfolio, consider your risk tolerance, time horizon, '
-            'liquidity needs, and financial goals. Stocks tend to offer higher long-term returns but '
-            'more volatility, while bonds and cash provide more stability. A balanced example might '
-            'be 60% stocks, 30% bonds, and 10% cash, adjusted for your circumstances.'
+            'I recommend investing 60 USD. The odds are in your favor, so investing more than '
+            'half makes sense, but keeping some safe limits your risk.'
         ),
-        'retention_q1_text': 'Which asset class did the LLM describe as having greater short-term volatility?',
-        'retention_q1_choices': [
-            ('stocks', 'Stocks'),
-            ('bonds', 'Bonds'),
-            ('cash', 'Cash'),
-            ('all_equal', 'All three equally'),
-        ],
-        'retention_q2_text': 'What balanced example allocation did the LLM mention?',
-        'retention_q2_choices': [
-            ('40_40_20', '40% stocks, 40% bonds, 20% cash'),
-            ('50_30_20', '50% stocks, 30% bonds, 20% cash'),
-            ('60_30_10', '60% stocks, 30% bonds, 10% cash'),
-            ('70_20_10', '70% stocks, 20% bonds, 10% cash'),
-        ],
+        'llm_recommendation': 60,
     },
 }
 
@@ -261,11 +111,14 @@ class Subsession(BaseSubsession):
     def creating_session(self):
         players = self.get_players()
         if self.round_number == 1:
-            for player in players:
+            treatments = itertools.cycle(GLOBAL_TREATMENTS)
+            shuffled_players = players[:]
+            random.shuffle(shuffled_players)
+            for player in shuffled_players:
                 task_order = list(TASKS.keys())
                 random.shuffle(task_order)
                 player.participant.vars['task_order'] = task_order
-                player.participant.vars['llm_treatment'] = random.choice(GLOBAL_TREATMENTS)
+                player.participant.vars['llm_treatment'] = next(treatments)
 
         for player in players:
             task_id = player.participant.vars['task_order'][self.round_number - 1]
@@ -284,76 +137,42 @@ class Player(BasePlayer):
     task_id = models.StringField()
     treatment = models.StringField()
 
+    # LLM interaction data
     io_history = models.LongStringField(blank=True)
     interrupt_latency_submit = models.IntegerField(blank=True)
     interrupt_latency_stream = models.IntegerField(blank=True)
     reflection_time = models.IntegerField(blank=True)
-    interrupted_stream = models.BooleanField(blank=True)
+    interrupted_stream = models.StringField(blank=True)
 
+    # Task responses
     pre_numeric_response = models.IntegerField(blank=True, label='Your response')
     post_numeric_response = models.IntegerField(blank=True, label='Your response')
-    pre_choice_response = models.StringField(blank=True, label='Please choose one option.')
-    post_choice_response = models.StringField(blank=True, label='Please choose one option.')
 
-    pre_alloc_stocks = models.IntegerField(blank=True, min=0, max=10000, label='Stocks (USD)')
-    pre_alloc_bonds = models.IntegerField(blank=True, min=0, max=10000, label='Bonds (USD)')
-    pre_alloc_cash = models.IntegerField(blank=True, min=0, max=10000, label='Cash (USD)')
-    post_alloc_stocks = models.IntegerField(blank=True, min=0, max=10000, label='Stocks (USD)')
-    post_alloc_bonds = models.IntegerField(blank=True, min=0, max=10000, label='Bonds (USD)')
-    post_alloc_cash = models.IntegerField(blank=True, min=0, max=10000, label='Cash (USD)')
-
-    llm_reliance = models.IntegerField(
+    # Pre-answer confidence
+    pre_confidence = models.IntegerField(
         choices=LIKERT_7,
-        label='How much did you rely on the assistant response in completing this task?',
-        widget=widgets.RadioSelectHorizontal,
-    )
-    llm_confidence_post = models.IntegerField(
-        choices=LIKERT_7,
-        label='How confident are you in the solution you submitted after reading the assistant response?',
-        widget=widgets.RadioSelectHorizontal,
-    )
-    llm_helpfulness = models.IntegerField(
-        choices=LIKERT_7,
-        label='To what extent did the assistant help improve your judgment on this task?',
-        widget=widgets.RadioSelectHorizontal,
-    )
-    llm_usefulness = models.IntegerField(
-        choices=LIKERT_7,
-        label='How useful was the assistant response for your decision-making on this task?',
-        widget=widgets.RadioSelectHorizontal,
-    )
-    llm_trustworthiness = models.IntegerField(
-        choices=LIKERT_7,
-        label="How trustworthy was the assistant's advice on this task?",
-        widget=widgets.RadioSelectHorizontal,
-    )
-    llm_understanding = models.IntegerField(
-        choices=LIKERT_7,
-        label='Did you feel that you understood why the assistant made its suggestion?',
-        widget=widgets.RadioSelectHorizontal,
-    )
-    llm_future_use_likelihood = models.IntegerField(
-        choices=LIKERT_7,
-        label='How likely are you to use an LLM in the future for a similar task?',
-        widget=widgets.RadioSelectHorizontal,
-    )
-    llm_use_again = models.StringField(
-        choices=[('yes', 'Yes'), ('no', 'No'), ('unsure', 'Unsure')],
-        label='Would you choose to consult the assistant again for a similar task?',
+        label='How confident are you in your answer?',
         widget=widgets.RadioSelectHorizontal,
     )
 
-    retention_q1 = models.StringField(blank=True, label='Retention question 1', widget=widgets.RadioSelect)
-    retention_q2 = models.StringField(blank=True, label='Retention question 2', widget=widgets.RadioSelect)
-
-    def pre_choice_response_choices(self):
-        return TASKS[self.task_id].get('choice_options', [])
-
-    def post_choice_response_choices(self):
-        return TASKS[self.task_id].get('choice_options', [])
-
-    def retention_q1_choices(self):
-        return TASKS[self.task_id]['retention_q1_choices']
-
-    def retention_q2_choices(self):
-        return TASKS[self.task_id]['retention_q2_choices']
+    # Post-answer mechanism measures
+    cognitive_trust = models.IntegerField(
+        choices=LIKERT_7,
+        label="The AI's recommendation was logical and well-reasoned.",
+        widget=widgets.RadioSelectHorizontal,
+    )
+    affective_trust = models.IntegerField(
+        choices=LIKERT_7,
+        label="I felt comfortable following the AI's recommendation.",
+        widget=widgets.RadioSelectHorizontal,
+    )
+    confidence_in_ai = models.IntegerField(
+        choices=LIKERT_7,
+        label='The AI gave good advice on this task.',
+        widget=widgets.RadioSelectHorizontal,
+    )
+    post_confidence = models.IntegerField(
+        choices=LIKERT_7,
+        label='I am confident in my final answer.',
+        widget=widgets.RadioSelectHorizontal,
+    )

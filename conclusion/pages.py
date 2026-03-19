@@ -4,7 +4,9 @@ from shared.timed_page import TimedPage
 class Conclusion(TimedPage):
     def vars_for_template(self):
         return dict(
-            conclusion='Thank you for participating in the study.',
+            prolific_completion_url=self.session.config.get(
+                'prolific_completion_url', ''
+            ),
         )
 
 

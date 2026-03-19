@@ -1,17 +1,19 @@
 import json
 from otree.api import *
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class TimedPage(Page):
-    def vars_for_template(self):
-        self.participant.vars['page_entry_time'] = datetime.utcnow()
-        return super().vars_for_template()
+    def get_context_data(self, **kwargs):
+        """Override Django's get_context_data to always record page entry time.
+        This runs regardless of whether subclasses override vars_for_template."""
+        self.participant.vars['page_entry_time'] = datetime.now(timezone.utc)
+        return super().get_context_data(**kwargs)
 
     def before_next_page(self):
         start = self.participant.vars.get('page_entry_time')
         if start:
-            elapsed_ms = int((datetime.utcnow() - start).total_seconds() * 1000)
+            elapsed_ms = int((datetime.now(timezone.utc) - start).total_seconds() * 1000)
             page_times = self.participant.vars.get('page_times', {})
             key = f'{self.__class__.__name__}_round_{self.round_number}'
             page_times[key] = elapsed_ms
@@ -21,8 +23,13 @@ class TimedPage(Page):
     def is_displayed(self):
         from consent.pages import ConsentPage  # import here to avoid circular imports
         from conclusion.pages import Conclusion
-        return (
-            not self.participant.vars.get('consent_declined', False)
-            or isinstance(self, ConsentPage)
-            or isinstance(self, Conclusion)
-        )
+        from pre_tasks_measures.pages import FailedAttentionPage
+        # Always show consent, conclusion, and the failed attention page
+        if isinstance(self, (ConsentPage, Conclusion, FailedAttentionPage)):
+            return True
+        # Block if consent declined or attention check failed
+        if self.participant.vars.get('consent_declined', False):
+            return False
+        if self.participant.vars.get('failed_attention', False):
+            return False
+        return True

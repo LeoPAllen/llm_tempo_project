@@ -6,24 +6,23 @@
 {% if show_debug_treatment %}
 <div class="debug-badge">Debug only: treatment = {{ debug_treatment }}</div>
 {% endif %}
-<div class="study-kicker">Assistant</div>
+<div class="study-kicker">Assistant Interaction</div>
 <h3 class="study-title">{{ task.title }}</h3>
-<div class="study-panel">
-  <p>{{ task.intro_text }}</p>
+
+<div id="chat-container" class="study-chat-container">
+  <div id="conversation" class="study-chat"></div>
 </div>
 
-<div id="instructions" class="study-panel">
-  <p><span class="study-label">Instructions:</span></p>
-  <p>{{ llm_interaction_instructions }}</p>
+<div id="prompt-area" class="study-prompt-area">
+  <div class="study-prompt-preview">
+    <span class="study-label">Your question:</span>
+    <p id="prompt-text">{{ llm_prompt }}</p>
+  </div>
+  <div class="study-actions">
+    <button type="button" id="ask-btn" class="btn-primary">Ask LLM</button>
+    <button type="button" id="interrupt-btn" class="btn-secondary" disabled>Stop</button>
+  </div>
 </div>
-
-<textarea id="user-input" rows="4" cols="70" placeholder="Paste your prompt here..."></textarea><br>
-<div class="study-actions">
-<button type="button" id="submit-btn">Submit</button>
-<button type="button" id="interrupt-btn" disabled>Stop</button>
-</div>
-
-<div id="conversation" class="study-chat"></div>
 
 <input type="hidden" name="io_history" id="io-history">
 <input type="hidden" name="interrupt_latency_submit" id="interrupt-latency-submit">
@@ -33,7 +32,7 @@
 
 {{ formfield_errors 'io_history' }}
 
-<button type="submit" id="next-button">Next</button>
+<button type="submit" id="next-button" class="btn-next">Next</button>
 </div>
 {% endblock %}
 
@@ -49,13 +48,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const treatmentConfig = {
     A_fast_start_fast_stream: { startDelay: 100, streamDelay: 100 },
     B_slow_start_fast_stream: { startDelay: 2000, streamDelay: 100 },
-    C_fast_start_slow_stream: { startDelay: 100, streamDelay: 500 },
-    D_slow_start_slow_stream: { startDelay: 2000, streamDelay: 500 }
+    C_fast_start_slow_stream: { startDelay: 100, streamDelay: 300 },
+    D_slow_start_slow_stream: { startDelay: 2000, streamDelay: 300 }
   };
 
-  const submitBtn = document.getElementById("submit-btn");
+  const askBtn = document.getElementById("ask-btn");
   const interruptBtn = document.getElementById("interrupt-btn");
-  const inputField = document.getElementById("user-input");
+  const promptText = document.getElementById("prompt-text");
+  const promptArea = document.getElementById("prompt-area");
   const conversationDiv = document.getElementById("conversation");
   const historyField = document.getElementById("io-history");
   const nextBtn = document.getElementById("next-button");
@@ -79,16 +79,22 @@ document.addEventListener("DOMContentLoaded", function () {
     nextBtn.style.pointerEvents = disable ? "none" : "auto";
   }
 
+  // Start with Next disabled until LLM interaction is complete
+  disableNextButton(true);
+
   nextBtn.addEventListener("click", function () {
     if (reflectionStart) {
       reflectionField.value = Date.now() - reflectionStart;
     }
   });
 
-  submitBtn.onclick = function () {
+  // Fallback: if no response arrives within 15s, re-enable Next so participant isn't stuck
+  let responseTimeout = null;
+
+  askBtn.onclick = function () {
     if (isStreaming || attemptsMade >= maxAttempts) return;
 
-    const msg = inputField.value.trim();
+    const msg = promptText.textContent.trim();
     if (!msg) return;
 
     latencySubmitField.value = "";
@@ -101,13 +107,20 @@ document.addEventListener("DOMContentLoaded", function () {
     disableNextButton(true);
     submitTime = Date.now();
     liveSend({ input: msg });
-    inputField.value = "";
+
+    // Disable the Ask button after clicking
+    askBtn.disabled = true;
+    askBtn.textContent = "Waiting...";
 
     attemptsMade += 1;
-    if (attemptsMade >= maxAttempts) {
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Max attempts used";
-    }
+
+    // Safety timeout in case WebSocket response never arrives
+    clearTimeout(responseTimeout);
+    responseTimeout = setTimeout(function () {
+      if (!isStreaming && nextBtn.disabled) {
+        disableNextButton(false);
+      }
+    }, 15000);
   };
 
   interruptBtn.onclick = function () {
@@ -122,37 +135,43 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   liveRecv = async function (data) {
+    clearTimeout(responseTimeout);
     isStreaming = true;
     streamTime = null;
 
     const userIn = data.input;
     const fullOut = data.output;
 
-    const userParagraph = document.createElement("p");
-    userParagraph.innerHTML = `<strong>You:</strong> ${userIn}`;
-    conversationDiv.appendChild(userParagraph);
+    // Show user message as chat bubble
+    const userBubble = document.createElement("div");
+    userBubble.className = "chat-bubble chat-user";
+    userBubble.innerHTML = `<div class="chat-sender">You</div><div class="chat-text">${userIn}</div>`;
+    conversationDiv.appendChild(userBubble);
 
-    const assistantParagraph = document.createElement("p");
-    assistantParagraph.innerHTML = "<strong>Assistant:</strong> ";
-    conversationDiv.appendChild(assistantParagraph);
+    // Show assistant message as chat bubble
+    const assistantBubble = document.createElement("div");
+    assistantBubble.className = "chat-bubble chat-assistant";
+    assistantBubble.innerHTML = `<div class="chat-sender">Assistant</div><div class="chat-text"></div>`;
+    conversationDiv.appendChild(assistantBubble);
+    const assistantText = assistantBubble.querySelector(".chat-text");
+
+    // Hide the prompt area after asking
+    promptArea.style.display = "none";
 
     const words = fullOut.split(" ");
-    const chunks = [];
-    for (let i = 0; i < words.length; i += 1) {
-      chunks.push(words.slice(i, i + 1).join(" "));
-    }
-
     const config = treatmentConfig[treatment] || { startDelay: 100, streamDelay: 100 };
 
     interruptBtn.disabled = false;
+    interruptBtn.style.display = "inline-block";
     await new Promise((resolve) => setTimeout(resolve, config.startDelay));
     streamTime = Date.now();
 
     let observedOutput = "";
-    for (const chunk of chunks) {
+    for (const word of words) {
       if (isInterrupted) break;
-      observedOutput += chunk + " ";
-      assistantParagraph.innerHTML = `<strong>Assistant:</strong> ${observedOutput}`;
+      observedOutput += word + " ";
+      assistantText.textContent = observedOutput;
+      conversationDiv.scrollTop = conversationDiv.scrollHeight;
       if (config.streamDelay) {
         await new Promise((resolve) => setTimeout(resolve, config.streamDelay));
       }
@@ -160,6 +179,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     isStreaming = false;
     interruptBtn.disabled = true;
+    interruptBtn.style.display = "none";
     interruptedField.value = isInterrupted ? "True" : "False";
     disableNextButton(false);
     reflectionStart = Date.now();

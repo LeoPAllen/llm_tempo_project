@@ -1,0 +1,33 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block content %}
+<div class="study-page">
+
+<p><strong>Your experience with the AI in this study</strong></p>
+{{ formfield 'overall_ai_future_use' }}
+{{ formfield 'overall_ai_thoughtful' }}
+
+<hr style="margin: 1.5rem 0;">
+
+<p><strong>Your general views on AI</strong></p>
+{{ formfield 'trust_automation_confident' }}
+{{ formfield 'trust_automation_reliable' }}
+{{ formfield 'trust_automation_trust' }}
+
+<hr style="margin: 1.5rem 0;">
+
+<p><strong>How you approach problems</strong></p>
+{{ formfield 'need_for_cognition_effort' }}
+{{ formfield 'need_for_cognition_enjoy' }}
+{{ formfield 'need_for_cognition_avoid' }}
+
+<hr style="margin: 1.5rem 0;">
+
+<p><strong>Your prior experience with AI</strong></p>
+{{ formfield 'prior_llm_used_before' }}
+{{ formfield 'prior_llm_accuracy' }}
+
+{{ next_button }}
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block content %}
+<div class="study-page">
+{% if show_debug_treatment %}
+<div class="debug-badge">Debug only: treatment = {{ debug_treatment }}</div>
+{% endif %}
+
+<div class="study-kicker">Decision Task {{ round_number }} of {{ total_rounds }}</div>
+
+<div class="study-panel">
+<p>{{ task.intro_text }}</p>
+</div>
+
+<p class="study-lead"><strong>{{ task.response_prompt }}</strong></p>
+
+<div class="inline-input-row">
+  {{ formfield 'pre_numeric_response' }}
+  <span class="range-hint">({{ task.response_range }})</span>
+</div>
+
+<div id="confidence-section" style="display: none;">
+{{ formfield 'pre_confidence' }}
+</div>
+
+{{ next_button }}
+</div>
+{% endblock %}
+
+{% block global_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var input = document.querySelector('input[name="pre_numeric_response"]');
+  var confidenceSection = document.getElementById("confidence-section");
+
+  input.addEventListener("input", function () {
+    if (input.value.trim() !== "") {
+      confidenceSection.style.display = "block";
+    }
+  });
+});
+</script>
+{% endblock %}
