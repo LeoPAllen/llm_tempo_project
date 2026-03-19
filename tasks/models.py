@@ -109,6 +109,7 @@ class Subsession(BaseSubsession):
     def creating_session(self):
         players = self.get_players()
         if self.round_number == 1:
+            forced = self.session.config.get('forced_treatment', '')
             treatments = itertools.cycle(GLOBAL_TREATMENTS)
             shuffled_players = players[:]
             random.shuffle(shuffled_players)
@@ -116,7 +117,10 @@ class Subsession(BaseSubsession):
                 task_order = list(TASKS.keys())
                 random.shuffle(task_order)
                 player.participant.vars['task_order'] = task_order
-                player.participant.vars['llm_treatment'] = next(treatments)
+                if forced:
+                    player.participant.vars['llm_treatment'] = forced
+                else:
+                    player.participant.vars['llm_treatment'] = next(treatments)
 
         for player in players:
             task_id = player.participant.vars['task_order'][self.round_number - 1]
