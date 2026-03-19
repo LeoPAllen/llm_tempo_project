@@ -46,10 +46,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const treatment = js_vars?.treatment || "undefined";
   const maxAttempts = js_vars?.llm_interaction_attempts || 1;
   const treatmentConfig = {
-    A_fast_start_fast_stream: { startDelay: 100, streamDelay: 100 },
-    B_slow_start_fast_stream: { startDelay: 2000, streamDelay: 100 },
-    C_fast_start_slow_stream: { startDelay: 100, streamDelay: 300 },
-    D_slow_start_slow_stream: { startDelay: 2000, streamDelay: 300 }
+    fast_stream: { startDelay: 100, streamDelay: 100 },
+    slow_stream: { startDelay: 100, streamDelay: 300 }
   };
 
   const askBtn = document.getElementById("ask-btn");
