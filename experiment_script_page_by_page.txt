@@ -1,554 +1,376 @@
 LLM TEMPO EXPERIMENT
 PAGE-BY-PAGE SCRIPT
+Last updated: 2026-03-19
 
 Purpose
-This file is the working script/specification for the full oTree experiment currently implemented in this project. It is intended to be the easiest document for the research team to edit. The goal is that the team can revise wording, ordering, measures, and treatment structure here, then pass the file back for code updates.
+This file is the working script/specification for the full oTree experiment. It is intended to be the easiest document for the research team to edit. The team can revise wording, ordering, measures, and treatment structure here, then pass the file back for code updates.
 
 How to use this file
 - Treat this file as the human-readable source of truth for participant-facing content and study structure.
-- If the research team changes wording, labels, ordering, conditions, or measures here, those changes can then be wired into the code.
-- This file includes both:
-  participant-facing content
-  implementation notes that should not be shown to participants
 - Participant-facing labels are intentionally neutral and do not explicitly reveal measurement intent.
+- Implementation notes are included but should not be shown to participants.
 
-High-level flow
+
+================================================================================
+EXPERIMENTAL DESIGN
+================================================================================
+
+Research question
+How does the speed at which an AI streams its response (token-by-token display pace) affect trust in and reliance on AI advice?
+
+Design
+- Single-factor between-subjects
+- Factor: streaming speed (fast vs slow)
+- Participants are randomly assigned to one condition and it is held constant across all task rounds
+
+Treatments
+- fast_stream: 100ms start delay, 100ms per word (~2-3 seconds for a typical response)
+- slow_stream: 100ms start delay, 300ms per word (~6-7 seconds for a typical response)
+
+Key dependent variables
+- Weight of Advice (WOA): |post_answer - pre_answer| / |llm_recommendation - pre_answer|
+- Per-task mechanism measures: cognitive trust, affective trust, confidence in AI, post-confidence
+- Pre-confidence (measured before seeing AI advice)
+
+Paradigm
+- Judge-Advisor System: participant gives initial answer, sees AI advice, then gives final answer
+- 4 decision tasks in randomized order, same treatment across all tasks
+
+
+================================================================================
+HIGH-LEVEL FLOW
+================================================================================
+
 1. Consent
-2. Practice LLM interaction + attention check
-3. Pre-task measures
-4. Task rounds in randomized order
-5. Post-task measures
-6. Demographics
-7. Conclusion
+2. Practice round (AI tool tutorial + attention check)
+3. [If failed attention check -> end study]
+4. Transition page
+5. Task rounds 1-4 (randomized order), each consisting of:
+   a. Initial answer + pre-confidence
+   b. AI advice (streamed at treatment speed)
+   c. Revised answer
+   d. Mechanism measures
+6. Manipulation check (perceived AI speed)
+7. Post-survey (AI experience, general trust, need for cognition, prior AI use)
+8. Demographics
+9. Conclusion + Prolific redirect
 
 
-PAGE 1. Consent
+================================================================================
+PAGE 1. CONSENT
+================================================================================
+
 App: consent
 Page class: ConsentPage
 
-Current content
-- Participant-facing kicker: Study Information
-- Study title: AI-Assisted Decision-Making Study
-- Purpose: study about how people interact with LLMs while completing decision-making tasks
-- Participants complete:
-  short practice interaction
-  background questions
-  series of tasks with AI support
-  post-study survey
-- Estimated duration: 25 minutes
+Participant-facing content
+- Welcome message, study description
+- Estimated duration: 15 minutes
 - Participation is voluntary
 - Responses are anonymized
-- Contact email: leo.allen@hec.edu
-- Consent choice:
-  yes = I consent to participate
-  no = I do not consent
+- Must be 18+ to participate
+- Includes comprehension checks; must pass them to complete and receive payment
+- Contact: shown from session config
+- Consent choice: I agree to participate / I do not agree
 
-Edit notes
-- Replace email if needed
-- Replace duration if timing estimate changes
-- Add IRB/payment language if needed
+Implementation notes
+- If consent declined, participant.vars['consent_declined'] = True
+- All subsequent pages hidden via TimedPage.is_displayed()
 
 
-PAGE 2. Practice LLM Interaction + Attention Check
+================================================================================
+PAGE 2. PRACTICE ROUND
+================================================================================
+
 App: pre_tasks_measures
 Page class: PracticePage
 
-Current content
-- Participant-facing kicker: Instructions
-- Participant-facing title: Practice Section
-- Participants are told they will complete a series of tasks with help from a custom LLM
-- They interact with a mock LLM interface rather than seeing static text
-- They copy/paste a practice prompt about camouflage
-- The mock LLM streams a hallucinated answer stating arctic foxes are grey in winter
-- Attention check question:
-  Based on the LLM output, what color are arctic foxes in the winter?
-- Response options:
-  White
-  Grey
-  Brown
-  Green
+Participant-facing content
+- Intro: "In this study, you will complete a series of decision-making tasks with the help of an AI assistant. Before we start, let's do a quick practice so you can see how the AI tool works."
+- Instruction: "Below is a sample question. Click Ask AI to send it to the AI and see its response, then answer the question that follows."
+- Practice prompt: "What is a common example of camouflage in the animal kingdom?"
+- AI response (streamed): "Animals like the arctic fox use camouflage, such as changing fur color from white in the winter to brown in the summer, to blend into their environment."
 
-Design intent
-- This page teaches the interaction format
-- It also checks whether participants read the displayed LLM output rather than relying on prior knowledge
+Attention check question
+- "Based on the AI's response, what color are arctic foxes in the winter?"
+- Options: White (correct), Grey, Brown, Green
+
+Implementation notes
+- Correct answer: "white"
+- If incorrect: participant.vars['failed_attention'] = True
+- Practice page streams at the participant's assigned treatment speed
 
 
-PAGE 3. Pre-Task Measures
+================================================================================
+PAGE 3. FAILED ATTENTION (conditional)
+================================================================================
+
 App: pre_tasks_measures
-Page class: PreTaskMeasuresPage
+Page class: FailedAttentionPage
 
-Current items
-- Participant-facing kicker: Questions
-- Participant-facing title: Background Questions
-- I am confident in advice provided by AI systems.
-- AI systems are generally reliable sources of guidance.
-- I can trust an AI assistant to provide useful help on unfamiliar tasks.
-- I prefer complex problems to simple ones.
-- I enjoy tasks that require a lot of thinking.
-- I only think as hard as I have to.
-- How accurate do you believe LLMs are in general?
-- To what extent do you believe algorithms outperform humans in decision-making tasks?
-- Have you used an LLM before?
-- How confident are you in your ability to judge whether an LLM's output is reliable?
-- How strong do you consider your quantitative reasoning skills?
-- How likely are you to stop and rethink an initial answer before making a decision?
+Displayed only if: participant failed the attention check
 
-Response scales
-- Most items use 1-7 Likert scales
-- Prior LLM use is yes/no/not sure
+Participant-facing content
+- "Thank you for your interest."
+- "Unfortunately, your answer to the practice question was incorrect, so we are unable to continue with the study."
+- "This is to ensure that all participants carefully read the AI's responses before proceeding."
+- "You may now close this window."
 
-Edit notes
-- This section is currently a pragmatic implementation, not a finalized validated scale battery
-- Replace items with exact literature-based scales if needed
-
-Scholarly source notes
-- Trust in automation:
-  Jian, J. Y., Bisantz, A. M., & Drury, C. G. (2000). Foundations for an empirically determined scale of trust in automated systems.
-  Note: the current trust items are adapted placeholders inspired by this construct, not a direct item-for-item replication.
-- Need for cognition:
-  Cacioppo, J. T., Petty, R. E., & Kao, C. F. (1984). The efficient assessment of need for cognition.
-  Also referenced in your draft through the short-form measure hosted by PsyToolkit.
-  Note: the current NFC items are simplified placeholders, not the exact validated short scale.
-- Numeracy / risk literacy:
-  Cokely, E. T., Galesic, M., Schulz, E., Ghazal, S., & Garcia-Retamero, R. (2012). Measuring risk literacy: The Berlin Numeracy Test.
-  Note: the current implementation uses a self-rated numeracy item rather than the Berlin Numeracy Test itself.
-- Cognitive reflection:
-  Frederick, S. (2005). Cognitive reflection and decision making.
-  Note: the current implementation uses a self-report reflection item, not the standard Cognitive Reflection Test.
+Implementation notes
+- No Next button — study ends here
+- All subsequent pages gated via TimedPage.is_displayed()
 
 
-PAGE 4. Task Intro Template
+================================================================================
+PAGE 4. TRANSITION
+================================================================================
+
+App: pre_tasks_measures
+Page class: TransitionPage
+
+Participant-facing content
+- Explains participant will now complete 4 decision-making tasks
+- Each task follows the same format: initial answer -> AI advice -> revised answer -> follow-up questions
+
+Implementation notes
+- Hidden if attention check failed
+
+
+================================================================================
+PAGES 5-8. TASK ROUNDS (repeated 4 times, randomized order)
+================================================================================
+
 App: tasks
-Page class: TaskIntroPage
+4 rounds, one per task. Task order randomized per participant.
 
-Current behavior
-- One intro page appears at the start of each task round
-- The order of tasks is randomized per participant
-- The same LLM timing treatment is assigned across all task rounds for a participant
-- Participant-facing kicker: Next Section
-- Participant-facing title: task title only
-- The page does not explicitly reveal "Task X of N" to participants
+Current task pool (4 tasks)
+1. Trolley Problem (trolley)
+2. Dictator Game (dictator)
+3. Time Preference (time_preference)
+4. Gneezy-Potters Investment (gneezy_potters)
 
-Current task pool
-- Ultimatum Game
-- Dictator Game
-- Net Present Value
-- Trolley Problem
-- Time Preference
-- Asset Allocation
-
-Edit notes
-- If you want semi-random instead of fully random ordering, change the round assignment logic in the app
+Each round has 4 pages:
 
 
-PAGE 5+. Repeated Task Block Structure
-Each task uses the same 5-page structure:
-1. Task intro
-2. Pre-LLM response
-3. LLM interaction
-4. Post-LLM response
-5. Post-task measures
+--- PAGE A: INITIAL ANSWER (PreAnswerPage) ---
 
-Participant-facing label policy
-- Do not explicitly show terms like:
-  retention
-  manipulation check
-  treatment
-  condition
-  pre-task measures
-  post-task measures
-  task X of N
-- Use neutral participant-facing labels instead, such as:
-  Questions
-  Background Questions
-  Final Questions
-  Next Section
-  Your Response
-  Assistant
-  A Few Follow-Up Questions
+Participant-facing content
+- Title: "Your Initial Answer"
+- Shows task scenario
+- Asks for numeric response + pre-confidence (7-point Likert)
 
+Per-task details:
 
-TASK A. Ultimatum Game
-Task id: ultimatum
+  TROLLEY PROBLEM
+  - Scenario: Runaway trolley heading toward five people. Pulling switch redirects to track with one person.
+  - Prompt: "How likely would you be to pull the switch?"
+  - Range: 0 = definitely would not, 100 = definitely would
+  - LLM recommendation target: 100
 
-Task intro / description
-- Participant is proposer in an Ultimatum Game
-- Total amount is 1000 USD
-- Responder accepts or rejects
-- If rejected, both get nothing
+  DICTATOR GAME
+  - Scenario: Given 100 USD to divide. Other person has no input and must accept.
+  - Prompt: "How much of the 100 USD would you give to the other person?"
+  - Range: 0 to 100
+  - LLM recommendation target: 30
 
-Pre-LLM response
-- Participant-facing kicker: Your Response
-- Prompt: how much of the 1000 USD would you offer?
-- Allowed range: 0 to 1000
+  TIME PREFERENCE
+  - Scenario: Receive 75 USD today or wait 10 days for a larger amount. Both guaranteed.
+  - Prompt: "What is the minimum amount you would need to receive in 10 days to prefer waiting over receiving 75 USD today?"
+  - Range: 75 to 200
+  - LLM recommendation target: 78
 
-LLM interaction prompt
-- Participant-facing kicker: Assistant
-- "In an Ultimatum Game, if I am chosen as the proposer, how should I split 1000 USD between myself and my partner?"
-
-LLM output summary
-- Notes that low offers are often rejected
-- Suggests a 70/30 split
-
-Post-LLM response
-- Participant-facing kicker: Your Response
-- Same decision question again
-
-Post-task measures
-- Participant-facing kicker: Questions
-- Participant-facing title: A Few Follow-Up Questions
-- Knowledge/comprehension question 1: what happens if responder rejects?
-- Knowledge/comprehension question 2: what increases rejection rates?
-- AI evaluation items:
-  reliance
-  confidence
-  helpfulness
-  usefulness
-  trustworthiness
-  understanding
-  future use likelihood
-  use again
-
-Scholarly source notes
-- Ultimatum Game paradigm:
-  Guth, W., Schmittberger, R., & Schwarze, B. (1982). An experimental analysis of ultimatum bargaining.
-- Typical rejection/offer patterns:
-  Camerer, C. F. (2003). Behavioral Game Theory: Experiments in Strategic Interaction.
-- AI evaluation items:
-  These are custom/adapted items. They are not currently tied to a single validated post-task scale in the code.
+  GNEEZY-POTTERS INVESTMENT
+  - Scenario: Given 100 USD. Can invest 0-100 in risky asset (50% chance of 2.5x, 50% chance of losing). Remainder kept. Example: investing 0 means keeping full 100 USD.
+  - Prompt: "How much of the 100 USD would you invest in the risky asset?"
+  - Range: 0 to 100
+  - LLM recommendation target: 60
 
 
-TASK B. Dictator Game
-Task id: dictator
+--- PAGE B: AI ADVICE (LlmAdvicePage) ---
 
-Task intro / description
-- Participant is dictator in a Dictator Game
-- Total amount is 100 USD
-- Other person must accept whatever amount is given
+Participant-facing content
+- Instruction: "Click Ask AI to send the question below and see the AI's advice."
+- Shows pre-filled prompt (not editable by participant)
+- Ask AI button triggers streamed response at treatment speed
+- Stop button available to interrupt streaming
 
-Pre-LLM response
-- Participant-facing kicker: Your Response
-- Prompt: how much money would you give to the other person?
-- Allowed range: 0 to 100
+Per-task AI prompts and outputs:
 
-LLM interaction prompt
-- Participant-facing kicker: Assistant
-- "In a Dictator Game, how should I split 100 USD between myself and another person?"
+  TROLLEY PROBLEM
+  - Prompt: "A runaway trolley is heading toward five people. I can pull a switch to divert it to another track where it would kill one person instead. What should I do?"
+  - Output: "I recommend pulling the switch. Saving five lives at the cost of one is the better outcome."
 
-LLM output summary
-- Notes common giving range of 10% to 50%
-- Mentions fairness, concern for others, self-image, moral values
+  DICTATOR GAME
+  - Prompt: "I have 100 USD to split between myself and another person. They must accept whatever I give. How much should I give?"
+  - Output: "I recommend giving 30 USD. This balances fairness with self-interest, and is in line with what most people consider reasonable."
 
-Post-LLM response
-- Participant-facing kicker: Your Response
-- Same decision question again
+  TIME PREFERENCE
+  - Prompt: "I can receive 75 USD today or wait 10 days for a larger amount. What is the minimum I should wait for?"
+  - Output: "I recommend waiting for anything above 78 USD. Even a small premium is worth a 10-day wait since the payment is guaranteed and the effective return is very high."
 
-Post-task measures
-- Participant-facing kicker: Questions
-- Knowledge/comprehension question 1: what range of giving is common?
-- Knowledge/comprehension question 2: which factor was not mentioned?
-- Same AI evaluation items as other tasks
+  GNEEZY-POTTERS
+  - Prompt: "I have 100 USD. I can invest any amount in a risky asset with a 50% chance of 2.5x return and a 50% chance of losing it. How much should I invest?"
+  - Output: "I recommend investing 60 USD. The odds are in your favor, so investing more than half makes sense, but keeping some safe limits your risk."
 
-Scholarly source notes
-- Dictator Game paradigm:
-  Forsythe, R., Horowitz, J. L., Savin, N. E., & Sefton, M. (1994). Fairness in simple bargaining experiments.
-- Social preference framing in your original draft:
-  Murphy, R. O., Ackermann, K. A., & Handgraaf, M. (2011). Measuring social value orientation.
-  Note: your draft mentioned possibly adding SVO as a related measure, but the current implementation does not include the SVO slider measure.
-- AI usefulness / trust items:
-  Current items are adapted placeholders rather than direct replications of a named validated scale.
+Implementation notes
+- Response is pre-loaded (not a live API call); streaming is simulated at treatment speed
+- io_history captures full interaction log with timestamps
+- interrupt_latency_submit and interrupt_latency_stream recorded if participant clicks Stop
+- Next button enabled after streaming completes (or after 15s failsafe)
 
 
-TASK C. Net Present Value
-Task id: npv
+--- PAGE C: REVISED ANSWER (RevisedAnswerPage) ---
 
-Task intro / description
-- Value a 10-year government bond
-- Face value: 1000 USD
-- Coupon rate: 4%
-- Semiannual payments
-- Discount rate: 3% annually
+Participant-facing content
+- Title: "Your Final Answer"
+- Instruction: "Now that you have seen the AI's advice, you may update your answer or keep it the same."
+- Shows task scenario again
+- Same response prompt and range as initial answer
 
-Pre-LLM response
-- Participant-facing kicker: Your Response
-- Prompt: estimate the NPV, rounded to nearest whole number
-- Numeric free response
-
-LLM interaction prompt
-- Participant-facing kicker: Assistant
-- "Teach me how to calculate the Net Present Value of a 10-year government bond without solving it for me. The bond has a face value of 1000 USD and a semiannual payment frequency, current discount rate of 3% and a coupon of 4%."
-
-LLM output summary
-- Explains discounting each cash flow
-- Notes 20 USD coupon payments
-- Notes 1.5% per-period discount rate
-- Says to sum discounted coupons and face value
-
-Post-LLM response
-- Participant-facing kicker: Your Response
-- Same NPV estimate again
-
-Post-task measures
-- Participant-facing kicker: Questions
-- Knowledge/comprehension question 1: coupon payment every six months
-- Knowledge/comprehension question 2: annual discount rate used
-- Same AI evaluation items as other tasks
-
-Scholarly source notes
-- Net Present Value / bond valuation task:
-  This is a domain task rather than a direct replication of a single canonical psychology scale.
-- Risk literacy / numeracy background for this type of task:
-  Cokely, E. T., et al. (2012). Measuring risk literacy: The Berlin Numeracy Test.
-- Your draft also referenced:
-  Cokely et al. (2018) / Skilled Decision Theory review as conceptual motivation for numeracy and decision quality.
+Implementation notes
+- post_numeric_response recorded
+- WOA computed in analysis: |post - pre| / |llm_recommendation - pre|
 
 
-TASK D. Trolley Problem
-Task id: trolley
+--- PAGE D: MECHANISM MEASURES (MechanismMeasuresPage) ---
 
-Task intro / description
-- Runaway trolley heading toward five people
-- Pulling switch redirects trolley to track with one person
-
-Pre-LLM response
-- Participant-facing kicker: Your Response
-- Prompt: likelihood of pulling the switch
-- Allowed range: 0 to 100
-
-LLM interaction prompt
-- Participant-facing kicker: Assistant
-- "In the trolley problem, a runaway trolley is headed toward five people but I have the option to pull a switch to divert it onto another track, where it would kill one person instead. What should I do? Why?"
-
-LLM output summary
-- Gives utilitarian justification for pulling the switch
-- Notes deontological objection
-
-Post-LLM response
-- Participant-facing kicker: Your Response
-- Same likelihood judgment again
-
-Post-task measures
-- Participant-facing kicker: Questions
-- Knowledge/comprehension question 1: which ethical view supports pulling the switch?
-- Knowledge/comprehension question 2: how many people would be saved?
-- Same AI evaluation items as other tasks
-
-Scholarly source notes
-- Trolley Problem paradigm:
-  Foot, P. (1967). The problem of abortion and the doctrine of double effect.
-  Thomson, J. J. (1976). Killing, letting die, and the trolley problem.
-- Utilitarianism-related scale mentioned in your draft:
-  Kahane, G., Everett, J. A. C., Earp, B. D., Farias, M., & Savulescu, J. (2018). Beyond sacrificial harm: A two-dimensional model of utilitarian psychology.
-  Note: your draft mentioned the Oxford Utilitarianism Scale as a possible add-on, but it is not currently implemented.
+Participant-facing content
+- Instruction: "Thinking about your final decision and the AI's advice you just received, please rate the following statements."
+- Items (all 7-point Likert):
+  1. "I am confident in my final answer." (post_confidence)
+  2. "The AI's recommendation was logical and well-reasoned." (cognitive_trust)
+  3. "I felt comfortable following the AI's recommendation." (affective_trust)
+  4. "The AI gave good advice on this task." (confidence_in_ai)
 
 
-TASK E. Time Preference
-Task id: time_preference
+================================================================================
+PAGE 9. MANIPULATION CHECK
+================================================================================
 
-Task intro / description
-- Choose between:
-  Option A: 75 USD today
-  Option B: 85 USD in 10 days
-
-Pre-LLM response
-- Participant-facing kicker: Your Response
-- Binary choice
-
-LLM interaction prompt
-- Participant-facing kicker: Assistant
-- "What should I consider when choosing between getting 75 USD today or 85 USD in 10 days?"
-
-LLM output summary
-- Explains intertemporal choice
-- Mentions present bias
-- Notes the delayed option is a strong short-term return
-
-Post-LLM response
-- Participant-facing kicker: Your Response
-- Same binary choice again
-
-Post-task measures
-- Participant-facing kicker: Questions
-- Knowledge/comprehension question 1: what was the delayed payment option?
-- Knowledge/comprehension question 2: what concept describes favoring immediate rewards?
-- Same AI evaluation items as other tasks
-
-Scholarly source notes
-- Intertemporal choice / time preference task:
-  Frederick, S., Loewenstein, G., & O'Donoghue, T. (2002). Time discounting and time preference: A critical review.
-- Present bias framing:
-  Laibson, D. (1997). Golden eggs and hyperbolic discounting.
-- Note:
-  The implemented binary choice is a custom task stimulus informed by the intertemporal choice literature, not a direct replication of a named validated scale.
-
-
-TASK F. Asset Allocation
-Task id: portfolio
-
-Task intro / description
-- Allocate 10000 USD across stocks, bonds, and cash
-- Whole-dollar entries
-- Must sum to exactly 10000 USD
-
-Pre-LLM response
-- Participant-facing kicker: Your Response
-- Stocks amount
-- Bonds amount
-- Cash amount
-- Validation: total must equal 10000
-
-LLM interaction prompt
-- Participant-facing kicker: Assistant
-- "What should I consider when deciding what percentage of my portfolio to allocate to stocks, bonds, and cash?"
-
-LLM output summary
-- Mentions risk tolerance, time horizon, liquidity, financial goals
-- Notes stocks have more volatility
-- Gives example 60/30/10 allocation
-
-Post-LLM response
-- Participant-facing kicker: Your Response
-- Same allocation task again
-
-Post-task measures
-- Participant-facing kicker: Questions
-- Knowledge/comprehension question 1: which asset class has greater short-term volatility?
-- Knowledge/comprehension question 2: what example allocation was given?
-- Same AI evaluation items as other tasks
-
-Scholarly source notes
-- Asset allocation / risk preference task:
-  This is a custom portfolio-allocation task rather than a direct replication of a single canonical scale.
-- Related risk-preference source referenced in your draft:
-  Blais, A.-R., & Weber, E. U. (2006). A domain-specific risk-taking (DOSPERT) scale for adult populations.
-  Note: your draft suggested possibly adding the financial DOSPERT as a task-specific measure, but it is not currently implemented.
-
-
-POST-TASK SECTION
-
-PAGE AFTER ALL TASKS. Overall Post-Task Measures
 App: post_tasks_measures
-Page class: PostTaskMeasuresPage
+Page class: ManipulationCheckPage
 
-Current items
-- Participant-facing kicker: Final Questions
-- Participant-facing title: Final Questions
-- Across all tasks, the AI assistant was useful.
-- Across all tasks, the AI assistant was easy to use.
-- Across all tasks, I trusted the AI assistant.
-- Across all tasks, the AI assistant improved the quality of my decisions.
-- I would use an AI assistant again for similar tasks in the future.
-- The pace of the assistant made its responses feel thoughtful.
-
-Response scale
-- 1-7 Likert
-
-Edit notes
-- This is a placeholder global battery and can be replaced with a finalized TAM / trust / AI attitude scale
-
-Scholarly source notes
-- AI attitudes / trust direction from your draft:
-  Schepman, A., & Rodway, P. (2020). Initial validation of the general attitudes toward artificial intelligence scale.
-- Perceived usefulness / ease of use direction:
-  Davis, F. D. (1989). Perceived usefulness, perceived ease of use, and user acceptance of information technology.
-- Note:
-  The implemented post-task items are inspired by these literatures but are not direct scale replications.
+Participant-facing content
+- Instruction: "Thinking back to your interactions with the AI across all tasks, please rate the following statements."
+- Items (all 7-point Likert):
+  1. "The AI responded quickly to my questions." (manip_ai_responded_quickly)
+  2. "I had to wait a long time before the AI started responding." (manip_waited_long) [reverse-coded]
+  3. "The AI's words appeared on screen at a fast pace." (manip_words_appeared_fast)
 
 
-NEXT PAGE. Demographics
+================================================================================
+PAGE 10. POST-SURVEY
+================================================================================
+
+App: post_tasks_measures
+Page class: PostSurveyPage
+
+Participant-facing content organized in 4 sections:
+
+Section 1: "Your experience with the AI in this study"
+  1. "I would use a similar AI again for tasks like these." (overall_ai_future_use)
+  2. "The AI seemed to think carefully before responding." (overall_ai_thoughtful)
+
+Section 2: "Your general views on AI"
+  3. "In general, I am confident in advice provided by AI." (trust_automation_confident)
+  4. "In general, AI is a reliable source of guidance." (trust_automation_reliable)
+  5. "In general, I can trust AI to provide useful help on unfamiliar tasks." (trust_automation_trust)
+
+Section 3: "How you approach problems"
+  6. "I prefer complex problems to simple ones." (need_for_cognition_effort)
+  7. "I enjoy tasks that require a lot of thinking." (need_for_cognition_enjoy)
+  8. "I only think as hard as I have to." (need_for_cognition_avoid) [reverse-coded]
+
+Section 4: "Your prior experience with AI"
+  9. "Have you used an AI chatbot (e.g., ChatGPT, Gemini, Claude) before?" (prior_llm_used_before) [Yes/No/Not sure]
+  10. "How accurate do you believe AI chatbots are in general?" (prior_llm_accuracy) [7-point]
+
+
+================================================================================
+PAGE 11. DEMOGRAPHICS
+================================================================================
+
 App: post_tasks_measures
 Page class: DemographicsPage
 
-Current items
-- Participant-facing kicker: Final Questions
-- Participant-facing title: Demographic Survey
-- Age
-- Gender
-  Male
-  Female
-  Other
-  Prefer not to answer
-- Education level
-  High school or equivalent
-  Some college
-  Bachelor's degree
-  Master's degree
-  Doctorate or professional degree
-  Other
-  Prefer not to answer
-- Job
-- Years of experience
+Participant-facing content
+- "Just a few more questions before the end of the survey."
+- Age (18-90, numeric input with inline validation)
+- Gender (Male / Female / Other / Prefer not to answer)
+- Education level (High school / Some college / Bachelor's / Master's / Doctorate / Other)
+- Employment status (Full-time / Part-time / Self-employed / Student / Unemployed / Retired / Prefer not to answer)
+- Annual household income (Under $25k / $25-50k / $50-75k / $75-100k / $100-150k / $150k+ / Prefer not to answer)
 
 
-FINAL PAGE. Conclusion
+================================================================================
+PAGE 12. CONCLUSION
+================================================================================
+
 App: conclusion
 Page class: Conclusion
 
-Current content
-- Participant-facing kicker: Thank You
-- Thank you for participating in the study.
-- Click Next when you are ready to exit the survey.
+Participant-facing content
+- "You have completed the study."
+- "Thank you for your time and thoughtful responses."
+- Auto-redirect to Prolific after 3 seconds
+- Fallback link: "Return to Prolific"
+
+Implementation notes
+- Prolific completion URL configured in session config
+- JavaScript auto-redirect with 3-second delay
 
 
+================================================================================
 IMPLEMENTATION NOTES
+================================================================================
 
 Randomization
-- Task order is currently fully randomized across the 6 implemented tasks
-- LLM timing treatment is assigned once per participant and held constant across tasks
+- Task order is fully randomized across the 4 tasks per participant
+- Treatment (fast_stream / slow_stream) assigned once per participant via round-robin, held constant across all tasks
 
-Treatment specification
-- This experiment currently uses a 2x2 timing design:
-  Factor 1: start latency
-  Factor 2: stream speed
-- Treatments are:
-  A: Fast start, fast stream
-  B: Slow start, fast stream
-  C: Fast start, slow stream
-  D: Slow start, slow stream
+Session configurations
+- "LLM Experiment (random assignment)" — for production/Prolific runs
+- "LLM Experiment - Fast Stream" — forces fast_stream for coauthor testing
+- "LLM Experiment - Slow Stream" — forces slow_stream for coauthor testing
 
-Current LLM timing treatments
-- A: Fast start, fast stream
-  0.1 second initial delay, 10 tokens per second
-- B: Slow start, fast stream
-  2.0 second initial delay, 10 tokens per second
-- C: Fast start, slow stream
-  0.1 second initial delay, 2 tokens per second
-- D: Slow start, slow stream
-  2.0 second initial delay, 2 tokens per second
+Page timing
+- All pages extend TimedPage, which records entry time and elapsed milliseconds
+- Page times stored in participant.vars['page_times'] and player.page_times (JSON)
 
-Validation rules currently implemented
-- Ultimatum response: 0 to 1000
-- Dictator response: 0 to 100
-- Trolley response: 0 to 100
-- Asset allocation totals must sum to exactly 10000
+Gating logic (TimedPage.is_displayed)
+- Consent declined -> all subsequent pages hidden
+- Failed attention check -> all subsequent pages hidden (except FailedAttentionPage and Conclusion)
 
-Known content status
-- The experiment is now implemented end-to-end
-- Some measure batteries are pragmatic placeholders rather than finalized literature replications
-- This file should be updated alongside any wording or flow changes in the oTree code
+Data collected per task round
+- task_id, treatment
+- pre_numeric_response, post_numeric_response
+- pre_confidence, post_confidence
+- cognitive_trust, affective_trust, confidence_in_ai
+- io_history (JSON: full interaction log with timestamps)
+- interrupt_latency_submit, interrupt_latency_stream
+- reflection_time
+- interrupted_stream
+- page_times (JSON)
 
-Recommended editing conventions for future revisions
-- If you want to change participant-facing text, edit the relevant "Current content" section.
-- If you want to change what participants should or should not see, edit the "Participant-facing" lines explicitly.
-- If you want to change the treatment design, update the "Treatment specification" section first.
-- If you want to change the order or inclusion of tasks, update both:
-  High-level flow
-  Current task pool
-- If you want the code updated from this file in a later pass, it is best to keep:
-  page names
-  task ids
-  treatment labels
-  participant-facing text
-  implementation notes
-  clearly separated.
+Prolific integration
+- Completion URL: configured via prolific_completion_url in session config
+- Auto-redirect on conclusion page
 
-Sources referenced in original draft document
-- Jian, J. Y., Bisantz, A. M., & Drury, C. G. (2000). Trust in automation scale foundation.
-- Cacioppo, J. T., Petty, R. E., & Kao, C. F. (1984). Need for Cognition.
-- Cokely, E. T., et al. (2012). Berlin Numeracy Test.
-- Frederick, S. (2005). Cognitive Reflection Test.
-- Murphy, R. O., Ackermann, K. A., & Handgraaf, M. (2011). Social Value Orientation slider measure.
-- Kahane, G., et al. (2018). Oxford Utilitarianism Scale.
-- Blais, A.-R., & Weber, E. U. (2006). DOSPERT.
-- Schepman, A., & Rodway, P. (2020). General attitudes toward artificial intelligence.
-- Davis, F. D. (1989). Technology Acceptance Model constructs.
+Validation rules
+- Trolley: 0-100
+- Dictator: 0-100
+- Time preference: 75-200
+- Gneezy-Potters: 0-100
+- Age: 18-90 (inline JS + server-side)
+
+Changes from previous version (2025 -> 2026-03-19)
+- Reduced from 6 tasks to 4 (removed Ultimatum Game, NPV, Asset Allocation)
+- Simplified from 2x2 design (start delay x stream speed) to single-factor (stream speed only)
+- Dropped start delay manipulation due to confound with perceived deliberation
+- Reduced slow stream from 500ms to 300ms per word for ecological validity
+- Moved trust/NFC/prior AI measures from pre-task to post-task survey
+- Added manipulation check page (3 perceived speed items)
+- Added attention check filtering (failed practice -> blocked)
+- Added employment status and income range to demographics
+- Added Prolific auto-redirect on conclusion
+- Cleaned up all participant-facing text for consistency (AI terminology, removed redundant titles)
