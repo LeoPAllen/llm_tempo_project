@@ -1,7 +1,7 @@
 # llm_tempo_project
 
 oTree experiment with app flow:
-`consent -> pre_tasks_measures -> ultimatum_game -> post_tasks_measures -> conclusion`
+`consent -> pre_tasks_measures -> tasks -> post_tasks_measures -> conclusion`
 
 ## Local setup
 
@@ -12,21 +12,21 @@ oTree experiment with app flow:
 conda activate otree_env
 ```
 
-Alternative (if you do not want Conda for this project):
+Alternative:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-3. Install dependencies in the active environment.
+3. Install dependencies in the active environment:
 
 ```bash
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-4. Set an admin password for oTree.
+4. Set an admin password:
 
 ```bash
 export OTREE_ADMIN_PASSWORD="change-me"
@@ -34,33 +34,45 @@ export OTREE_ADMIN_PASSWORD="change-me"
 
 ## Run locally
 
-Start the development server:
-
 ```bash
 otree devserver
 ```
 
 Then open:
 - Participant/demo links: `http://localhost:8000`
-- Admin page: `http://localhost:8000/admin` (username: `admin`, password: `OTREE_ADMIN_PASSWORD`)
+- Admin page: `http://localhost:8000/admin`
 
-## Test your changes
+Admin login:
+- Username: `admin`
+- Password: value of `OTREE_ADMIN_PASSWORD`
 
-Typical local test loop:
-
-1. Edit code.
-2. Stop server with `Ctrl+C`.
-3. (Optional clean reset) remove local db and Python cache:
+## Reset local state
 
 ```bash
 rm -f db.sqlite3
 find . -name "__pycache__" -type d -prune -exec rm -rf {} +
+otree devserver
 ```
 
-4. Restart with `otree devserver`.
-5. Re-run through the participant flow in browser.
+## Deploying live
 
-## Notes
+Simplest path: oTree Hub / Heroku.
 
-- `Procfile` is for production process types (`prodserver1of2`/`prodserver2of2`), not required for local dev.
-- Keep your virtual environment active whenever running `otree` commands.
+Deployment files already included:
+- `Procfile`
+- `.python-version`
+- `requirements.txt`
+- `.env.example`
+
+Required environment variables:
+
+```bash
+OTREE_ADMIN_PASSWORD=your-secure-password
+OTREE_PRODUCTION=1
+OTREE_AUTH_LEVEL=STUDY
+```
+
+Notes:
+- `OTREE_AUTH_LEVEL=STUDY` is the safest default for a real study deployment.
+- If you deploy outside Heroku and use Postgres directly, also set `DATABASE_URL`.
+- Before inviting participants, do a full click-through on the deployed app and verify session creation, participant links, admin login, and export.

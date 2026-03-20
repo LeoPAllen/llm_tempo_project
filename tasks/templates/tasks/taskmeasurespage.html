@@ -1,0 +1,29 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block content %}
+<div class="study-page">
+{% if show_debug_treatment %}
+<div class="debug-badge">Debug only: treatment = {{ debug_treatment }}</div>
+{% endif %}
+<div class="study-kicker">Questions</div>
+<h3 class="study-title">A Few Follow-Up Questions</h3>
+
+<p class="study-label">{{ retention_q1_text }}</p>
+{{ formfield 'retention_q1' }}
+
+<p class="study-label">{{ retention_q2_text }}</p>
+{{ formfield 'retention_q2' }}
+
+{{ formfield 'llm_reliance' }}
+{{ formfield 'llm_confidence_post' }}
+{{ formfield 'llm_helpfulness' }}
+{{ formfield 'llm_usefulness' }}
+{{ formfield 'llm_trustworthiness' }}
+{{ formfield 'llm_understanding' }}
+{{ formfield 'llm_future_use_likelihood' }}
+{{ formfield 'llm_use_again' }}
+
+{{ next_button }}
+</div>
+{% endblock %}

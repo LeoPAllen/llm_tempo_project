@@ -1,0 +1,26 @@
+{% extends "global/Page.html" %}
+{% block content %}
+<div class="study-page">
+
+<h3 class="study-title">Welcome to Our Study</h3>
+
+<p>Thank you for your interest in this research. In this study, you will work through a series of decision-making tasks. For each task, you will have access to an AI assistant that can provide advice.</p>
+
+<p>The study takes approximately <strong>15 minutes</strong> to complete.</p>
+
+<div class="study-panel">
+<p><strong>A few things to know before we begin:</strong></p>
+<ul style="margin: 0.5rem 0 0; padding-left: 1.2rem;">
+<li>Your participation is voluntary and you may stop at any time.</li>
+<li>Your responses are anonymized and used only for academic research.</li>
+<li>You must be at least 18 years old to participate.</li>
+<li>Please read all instructions and AI responses carefully. The study includes comprehension checks, and you must pass them to complete the study and receive payment.</li>
+<li>If you have questions, contact {{ contact_email }}.</li>
+</ul>
+</div>
+
+{{ formfields }}
+{{ next_button }}
+
+</div>
+{% endblock %}

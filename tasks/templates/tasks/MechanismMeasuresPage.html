@@ -1,0 +1,19 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block content %}
+<div class="study-page">
+{% if show_debug_treatment %}
+<div class="debug-badge">Debug only: treatment = {{ debug_treatment }}</div>
+{% endif %}
+
+<p>Thinking about your <strong>final decision</strong> and the AI's advice you just received, please rate the following statements.</p>
+
+{{ formfield 'post_confidence' }}
+{{ formfield 'cognitive_trust' }}
+{{ formfield 'affective_trust' }}
+{{ formfield 'confidence_in_ai' }}
+
+{{ next_button }}
+</div>
+{% endblock %}

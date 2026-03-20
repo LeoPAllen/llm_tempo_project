@@ -1,0 +1,193 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block content %}
+<div class="study-page">
+{% if show_debug_treatment %}
+<div class="debug-badge">Debug only: treatment = {{ debug_treatment }}</div>
+{% endif %}
+<div class="study-kicker">Assistant Interaction</div>
+<h3 class="study-title">{{ task.title }}</h3>
+
+<div id="chat-container" class="study-chat-container">
+  <div id="conversation" class="study-chat"></div>
+</div>
+
+<div id="prompt-area" class="study-prompt-area">
+  <div class="study-prompt-preview">
+    <span class="study-label">Your question:</span>
+    <p id="prompt-text">{{ llm_prompt }}</p>
+  </div>
+  <div class="study-actions">
+    <button type="button" id="ask-btn" class="btn-primary">Ask LLM</button>
+    <button type="button" id="interrupt-btn" class="btn-secondary" disabled>Stop</button>
+  </div>
+</div>
+
+<input type="hidden" name="io_history" id="io-history">
+<input type="hidden" name="interrupt_latency_submit" id="interrupt-latency-submit">
+<input type="hidden" name="interrupt_latency_stream" id="interrupt-latency-stream">
+<input type="hidden" name="interrupted_stream" id="interrupted-stream">
+<input type="hidden" name="reflection_time" id="reflection-time">
+
+{{ formfield_errors 'io_history' }}
+
+<button type="submit" id="next-button" class="btn-next">Next</button>
+</div>
+{% endblock %}
+
+{% block js_vars %}
+{{ super() }}
+{% endblock %}
+
+{% block global_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const treatment = js_vars?.treatment || "undefined";
+  const maxAttempts = js_vars?.llm_interaction_attempts || 1;
+  const treatmentConfig = {
+    fast_stream: { startDelay: 100, streamDelay: 100 },
+    slow_stream: { startDelay: 100, streamDelay: 300 }
+  };
+
+  const askBtn = document.getElementById("ask-btn");
+  const interruptBtn = document.getElementById("interrupt-btn");
+  const promptText = document.getElementById("prompt-text");
+  const promptArea = document.getElementById("prompt-area");
+  const conversationDiv = document.getElementById("conversation");
+  const historyField = document.getElementById("io-history");
+  const nextBtn = document.getElementById("next-button");
+  const latencySubmitField = document.getElementById("interrupt-latency-submit");
+  const latencyStreamField = document.getElementById("interrupt-latency-stream");
+  const interruptedField = document.getElementById("interrupted-stream");
+  const reflectionField = document.getElementById("reflection-time");
+
+  let history = [];
+  let isStreaming = false;
+  let isInterrupted = false;
+  let submitTime = null;
+  let streamTime = null;
+  let reflectionStart = null;
+  let attemptsMade = 0;
+
+  function disableNextButton(disable) {
+    if (!nextBtn) return;
+    nextBtn.disabled = disable;
+    nextBtn.style.opacity = disable ? "0.5" : "1";
+    nextBtn.style.pointerEvents = disable ? "none" : "auto";
+  }
+
+  // Start with Next disabled until LLM interaction is complete
+  disableNextButton(true);
+
+  nextBtn.addEventListener("click", function () {
+    if (reflectionStart) {
+      reflectionField.value = Date.now() - reflectionStart;
+    }
+  });
+
+  // Fallback: if no response arrives within 15s, re-enable Next so participant isn't stuck
+  let responseTimeout = null;
+
+  askBtn.onclick = function () {
+    if (isStreaming || attemptsMade >= maxAttempts) return;
+
+    const msg = promptText.textContent.trim();
+    if (!msg) return;
+
+    latencySubmitField.value = "";
+    latencyStreamField.value = "";
+    interruptedField.value = "";
+    reflectionField.value = "";
+    historyField.value = "";
+
+    isInterrupted = false;
+    disableNextButton(true);
+    submitTime = Date.now();
+    liveSend({ input: msg });
+
+    // Disable the Ask button after clicking
+    askBtn.disabled = true;
+    askBtn.textContent = "Waiting...";
+
+    attemptsMade += 1;
+
+    // Safety timeout in case WebSocket response never arrives
+    clearTimeout(responseTimeout);
+    responseTimeout = setTimeout(function () {
+      if (!isStreaming && nextBtn.disabled) {
+        disableNextButton(false);
+      }
+    }, 15000);
+  };
+
+  interruptBtn.onclick = function () {
+    if (!isStreaming || isInterrupted) return;
+    isInterrupted = true;
+    interruptBtn.disabled = true;
+    const now = Date.now();
+    latencySubmitField.value = now - submitTime;
+    if (streamTime) {
+      latencyStreamField.value = now - streamTime;
+    }
+  };
+
+  liveRecv = async function (data) {
+    clearTimeout(responseTimeout);
+    isStreaming = true;
+    streamTime = null;
+
+    const userIn = data.input;
+    const fullOut = data.output;
+
+    // Show user message as chat bubble
+    const userBubble = document.createElement("div");
+    userBubble.className = "chat-bubble chat-user";
+    userBubble.innerHTML = `<div class="chat-sender">You</div><div class="chat-text">${userIn}</div>`;
+    conversationDiv.appendChild(userBubble);
+
+    // Show assistant message as chat bubble
+    const assistantBubble = document.createElement("div");
+    assistantBubble.className = "chat-bubble chat-assistant";
+    assistantBubble.innerHTML = `<div class="chat-sender">Assistant</div><div class="chat-text"></div>`;
+    conversationDiv.appendChild(assistantBubble);
+    const assistantText = assistantBubble.querySelector(".chat-text");
+
+    // Hide the prompt area after asking
+    promptArea.style.display = "none";
+
+    const words = fullOut.split(" ");
+    const config = treatmentConfig[treatment] || { startDelay: 100, streamDelay: 100 };
+
+    interruptBtn.disabled = false;
+    interruptBtn.style.display = "inline-block";
+    await new Promise((resolve) => setTimeout(resolve, config.startDelay));
+    streamTime = Date.now();
+
+    let observedOutput = "";
+    for (const word of words) {
+      if (isInterrupted) break;
+      observedOutput += word + " ";
+      assistantText.textContent = observedOutput;
+      conversationDiv.scrollTop = conversationDiv.scrollHeight;
+      if (config.streamDelay) {
+        await new Promise((resolve) => setTimeout(resolve, config.streamDelay));
+      }
+    }
+
+    isStreaming = false;
+    interruptBtn.disabled = true;
+    interruptBtn.style.display = "none";
+    interruptedField.value = isInterrupted ? "True" : "False";
+    disableNextButton(false);
+    reflectionStart = Date.now();
+
+    history.push({
+      input: userIn,
+      output: observedOutput.trim()
+    });
+    historyField.value = JSON.stringify(history);
+  };
+});
+</script>
+{% endblock %}

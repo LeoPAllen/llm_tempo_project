@@ -1,18 +1,4 @@
-from otree.api import (
-    models,
-    widgets,
-    BaseConstants,
-    BaseSubsession,
-    BaseGroup,
-    BasePlayer,
-    Currency as c,
-    currency_range,
-)
-
-
-doc = """
-Your app description
-"""
+from otree.api import BaseConstants, BaseSubsession, BaseGroup, BasePlayer, models, widgets
 
 
 class Constants(BaseConstants):
@@ -31,3 +17,16 @@ class Group(BaseGroup):
 
 class Player(BasePlayer):
     page_times = models.LongStringField(blank=True)
+
+    practice_io_history = models.LongStringField(blank=True)
+
+    practice_attention_check = models.StringField(
+        choices=[
+            ('white', 'White'),
+            ('grey', 'Grey'),
+            ('brown', 'Brown'),
+            ('green', 'Green'),
+        ],
+        label="Based on the AI's response, what color are arctic foxes in the winter?",
+        widget=widgets.RadioSelect,
+    )

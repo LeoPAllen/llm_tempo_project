@@ -1,0 +1,19 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block content %}
+<div class="study-page">
+{% if show_debug_treatment %}
+<div class="debug-badge">Debug only: treatment = {{ debug_treatment }}</div>
+{% endif %}
+<div class="study-kicker">Your Response</div>
+<h3 class="study-title">{{ task.title }}</h3>
+<div class="study-panel">
+<p>{{ task.intro_text }}</p>
+</div>
+<p class="study-lead"><span class="study-label">Your task:</span> {{ task.response_prompt }}</p>
+
+{{ formfields }}
+{{ next_button }}
+</div>
+{% endblock %}

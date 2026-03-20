@@ -1,0 +1,14 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block content %}
+<div class="study-page">
+<div class="study-kicker">Questions</div>
+<h3 class="study-title">Background Questions</h3>
+
+<p class="study-lead">Please answer the following questions before continuing.</p>
+
+{{ formfields }}
+{{ next_button }}
+</div>
+{% endblock %}

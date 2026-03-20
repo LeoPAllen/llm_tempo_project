@@ -1,6 +1,31 @@
-{% block content %}
-    <p>{{ conclusion }}</p>
-    <p>Click Next when you're ready to exit the survey.</p>
+{% extends "global/Page.html" %}
+{% load otree static %}
 
-    {{ next_button }}
+{% block content %}
+<div class="study-page">
+<h3 class="study-title">You have completed the study.</h3>
+
+<p>Thank you for your time and thoughtful responses.</p>
+
+<p>You will be redirected to Prolific shortly. If not, click the link below:</p>
+
+<p style="text-align: center; margin: 1.5rem 0;">
+  <a id="prolific-link" href="{{ prolific_completion_url }}" style="font-size: 1.1rem; font-weight: 600;">Return to Prolific</a>
+</p>
+
+<p style="color: #627d98; font-size: 0.9rem;">You may now close this window.</p>
+</div>
+{% endblock %}
+
+{% block global_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var url = "{{ prolific_completion_url }}";
+  if (url) {
+    setTimeout(function () {
+      window.location.href = url;
+    }, 3000);
+  }
+});
+</script>
 {% endblock %}

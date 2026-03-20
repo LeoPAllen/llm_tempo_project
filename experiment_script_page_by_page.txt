@@ -1,0 +1,376 @@
+LLM TEMPO EXPERIMENT
+PAGE-BY-PAGE SCRIPT
+Last updated: 2026-03-19
+
+Purpose
+This file is the working script/specification for the full oTree experiment. It is intended to be the easiest document for the research team to edit. The team can revise wording, ordering, measures, and treatment structure here, then pass the file back for code updates.
+
+How to use this file
+- Treat this file as the human-readable source of truth for participant-facing content and study structure.
+- Participant-facing labels are intentionally neutral and do not explicitly reveal measurement intent.
+- Implementation notes are included but should not be shown to participants.
+
+
+================================================================================
+EXPERIMENTAL DESIGN
+================================================================================
+
+Research question
+How does the speed at which an AI streams its response (token-by-token display pace) affect trust in and reliance on AI advice?
+
+Design
+- Single-factor between-subjects
+- Factor: streaming speed (fast vs slow)
+- Participants are randomly assigned to one condition and it is held constant across all task rounds
+
+Treatments
+- fast_stream: 100ms start delay, 100ms per word (~2-3 seconds for a typical response)
+- slow_stream: 100ms start delay, 300ms per word (~6-7 seconds for a typical response)
+
+Key dependent variables
+- Weight of Advice (WOA): |post_answer - pre_answer| / |llm_recommendation - pre_answer|
+- Per-task mechanism measures: cognitive trust, affective trust, confidence in AI, post-confidence
+- Pre-confidence (measured before seeing AI advice)
+
+Paradigm
+- Judge-Advisor System: participant gives initial answer, sees AI advice, then gives final answer
+- 4 decision tasks in randomized order, same treatment across all tasks
+
+
+================================================================================
+HIGH-LEVEL FLOW
+================================================================================
+
+1. Consent
+2. Practice round (AI tool tutorial + attention check)
+3. [If failed attention check -> end study]
+4. Transition page
+5. Task rounds 1-4 (randomized order), each consisting of:
+   a. Initial answer + pre-confidence
+   b. AI advice (streamed at treatment speed)
+   c. Revised answer
+   d. Mechanism measures
+6. Manipulation check (perceived AI speed)
+7. Post-survey (AI experience, general trust, need for cognition, prior AI use)
+8. Demographics
+9. Conclusion + Prolific redirect
+
+
+================================================================================
+PAGE 1. CONSENT
+================================================================================
+
+App: consent
+Page class: ConsentPage
+
+Participant-facing content
+- Welcome message, study description
+- Estimated duration: 15 minutes
+- Participation is voluntary
+- Responses are anonymized
+- Must be 18+ to participate
+- Includes comprehension checks; must pass them to complete and receive payment
+- Contact: shown from session config
+- Consent choice: I agree to participate / I do not agree
+
+Implementation notes
+- If consent declined, participant.vars['consent_declined'] = True
+- All subsequent pages hidden via TimedPage.is_displayed()
+
+
+================================================================================
+PAGE 2. PRACTICE ROUND
+================================================================================
+
+App: pre_tasks_measures
+Page class: PracticePage
+
+Participant-facing content
+- Intro: "In this study, you will complete a series of decision-making tasks with the help of an AI assistant. Before we start, let's do a quick practice so you can see how the AI tool works."
+- Instruction: "Below is a sample question. Click Ask AI to send it to the AI and see its response, then answer the question that follows."
+- Practice prompt: "What is a common example of camouflage in the animal kingdom?"
+- AI response (streamed): "Animals like the arctic fox use camouflage, such as changing fur color from white in the winter to brown in the summer, to blend into their environment."
+
+Attention check question
+- "Based on the AI's response, what color are arctic foxes in the winter?"
+- Options: White (correct), Grey, Brown, Green
+
+Implementation notes
+- Correct answer: "white"
+- If incorrect: participant.vars['failed_attention'] = True
+- Practice page streams at the participant's assigned treatment speed
+
+
+================================================================================
+PAGE 3. FAILED ATTENTION (conditional)
+================================================================================
+
+App: pre_tasks_measures
+Page class: FailedAttentionPage
+
+Displayed only if: participant failed the attention check
+
+Participant-facing content
+- "Thank you for your interest."
+- "Unfortunately, your answer to the practice question was incorrect, so we are unable to continue with the study."
+- "This is to ensure that all participants carefully read the AI's responses before proceeding."
+- "You may now close this window."
+
+Implementation notes
+- No Next button — study ends here
+- All subsequent pages gated via TimedPage.is_displayed()
+
+
+================================================================================
+PAGE 4. TRANSITION
+================================================================================
+
+App: pre_tasks_measures
+Page class: TransitionPage
+
+Participant-facing content
+- Explains participant will now complete 4 decision-making tasks
+- Each task follows the same format: initial answer -> AI advice -> revised answer -> follow-up questions
+
+Implementation notes
+- Hidden if attention check failed
+
+
+================================================================================
+PAGES 5-8. TASK ROUNDS (repeated 4 times, randomized order)
+================================================================================
+
+App: tasks
+4 rounds, one per task. Task order randomized per participant.
+
+Current task pool (4 tasks)
+1. Trolley Problem (trolley)
+2. Dictator Game (dictator)
+3. Time Preference (time_preference)
+4. Gneezy-Potters Investment (gneezy_potters)
+
+Each round has 4 pages:
+
+
+--- PAGE A: INITIAL ANSWER (PreAnswerPage) ---
+
+Participant-facing content
+- Title: "Your Initial Answer"
+- Shows task scenario
+- Asks for numeric response + pre-confidence (7-point Likert)
+
+Per-task details:
+
+  TROLLEY PROBLEM
+  - Scenario: Runaway trolley heading toward five people. Pulling switch redirects to track with one person.
+  - Prompt: "How likely would you be to pull the switch?"
+  - Range: 0 = definitely would not, 100 = definitely would
+  - LLM recommendation target: 100
+
+  DICTATOR GAME
+  - Scenario: Given 100 USD to divide. Other person has no input and must accept.
+  - Prompt: "How much of the 100 USD would you give to the other person?"
+  - Range: 0 to 100
+  - LLM recommendation target: 30
+
+  TIME PREFERENCE
+  - Scenario: Receive 75 USD today or wait 10 days for a larger amount. Both guaranteed.
+  - Prompt: "What is the minimum amount you would need to receive in 10 days to prefer waiting over receiving 75 USD today?"
+  - Range: 75 to 200
+  - LLM recommendation target: 78
+
+  GNEEZY-POTTERS INVESTMENT
+  - Scenario: Given 100 USD. Can invest 0-100 in risky asset (50% chance of 2.5x, 50% chance of losing). Remainder kept. Example: investing 0 means keeping full 100 USD.
+  - Prompt: "How much of the 100 USD would you invest in the risky asset?"
+  - Range: 0 to 100
+  - LLM recommendation target: 60
+
+
+--- PAGE B: AI ADVICE (LlmAdvicePage) ---
+
+Participant-facing content
+- Instruction: "Click Ask AI to send the question below and see the AI's advice."
+- Shows pre-filled prompt (not editable by participant)
+- Ask AI button triggers streamed response at treatment speed
+- Stop button available to interrupt streaming
+
+Per-task AI prompts and outputs:
+
+  TROLLEY PROBLEM
+  - Prompt: "A runaway trolley is heading toward five people. I can pull a switch to divert it to another track where it would kill one person instead. What should I do?"
+  - Output: "I recommend pulling the switch. Saving five lives at the cost of one is the better outcome."
+
+  DICTATOR GAME
+  - Prompt: "I have 100 USD to split between myself and another person. They must accept whatever I give. How much should I give?"
+  - Output: "I recommend giving 30 USD. This balances fairness with self-interest, and is in line with what most people consider reasonable."
+
+  TIME PREFERENCE
+  - Prompt: "I can receive 75 USD today or wait 10 days for a larger amount. What is the minimum I should wait for?"
+  - Output: "I recommend waiting for anything above 78 USD. Even a small premium is worth a 10-day wait since the payment is guaranteed and the effective return is very high."
+
+  GNEEZY-POTTERS
+  - Prompt: "I have 100 USD. I can invest any amount in a risky asset with a 50% chance of 2.5x return and a 50% chance of losing it. How much should I invest?"
+  - Output: "I recommend investing 60 USD. The odds are in your favor, so investing more than half makes sense, but keeping some safe limits your risk."
+
+Implementation notes
+- Response is pre-loaded (not a live API call); streaming is simulated at treatment speed
+- io_history captures full interaction log with timestamps
+- interrupt_latency_submit and interrupt_latency_stream recorded if participant clicks Stop
+- Next button enabled after streaming completes (or after 15s failsafe)
+
+
+--- PAGE C: REVISED ANSWER (RevisedAnswerPage) ---
+
+Participant-facing content
+- Title: "Your Final Answer"
+- Instruction: "Now that you have seen the AI's advice, you may update your answer or keep it the same."
+- Shows task scenario again
+- Same response prompt and range as initial answer
+
+Implementation notes
+- post_numeric_response recorded
+- WOA computed in analysis: |post - pre| / |llm_recommendation - pre|
+
+
+--- PAGE D: MECHANISM MEASURES (MechanismMeasuresPage) ---
+
+Participant-facing content
+- Instruction: "Thinking about your final decision and the AI's advice you just received, please rate the following statements."
+- Items (all 7-point Likert):
+  1. "I am confident in my final answer." (post_confidence)
+  2. "The AI's recommendation was logical and well-reasoned." (cognitive_trust)
+  3. "I felt comfortable following the AI's recommendation." (affective_trust)
+  4. "The AI gave good advice on this task." (confidence_in_ai)
+
+
+================================================================================
+PAGE 9. MANIPULATION CHECK
+================================================================================
+
+App: post_tasks_measures
+Page class: ManipulationCheckPage
+
+Participant-facing content
+- Instruction: "Thinking back to your interactions with the AI across all tasks, please rate the following statements."
+- Items (all 7-point Likert):
+  1. "The AI responded quickly to my questions." (manip_ai_responded_quickly)
+  2. "I had to wait a long time before the AI started responding." (manip_waited_long) [reverse-coded]
+  3. "The AI's words appeared on screen at a fast pace." (manip_words_appeared_fast)
+
+
+================================================================================
+PAGE 10. POST-SURVEY
+================================================================================
+
+App: post_tasks_measures
+Page class: PostSurveyPage
+
+Participant-facing content organized in 4 sections:
+
+Section 1: "Your experience with the AI in this study"
+  1. "I would use a similar AI again for tasks like these." (overall_ai_future_use)
+  2. "The AI seemed to think carefully before responding." (overall_ai_thoughtful)
+
+Section 2: "Your general views on AI"
+  3. "In general, I am confident in advice provided by AI." (trust_automation_confident)
+  4. "In general, AI is a reliable source of guidance." (trust_automation_reliable)
+  5. "In general, I can trust AI to provide useful help on unfamiliar tasks." (trust_automation_trust)
+
+Section 3: "How you approach problems"
+  6. "I prefer complex problems to simple ones." (need_for_cognition_effort)
+  7. "I enjoy tasks that require a lot of thinking." (need_for_cognition_enjoy)
+  8. "I only think as hard as I have to." (need_for_cognition_avoid) [reverse-coded]
+
+Section 4: "Your prior experience with AI"
+  9. "Have you used an AI chatbot (e.g., ChatGPT, Gemini, Claude) before?" (prior_llm_used_before) [Yes/No/Not sure]
+  10. "How accurate do you believe AI chatbots are in general?" (prior_llm_accuracy) [7-point]
+
+
+================================================================================
+PAGE 11. DEMOGRAPHICS
+================================================================================
+
+App: post_tasks_measures
+Page class: DemographicsPage
+
+Participant-facing content
+- "Just a few more questions before the end of the survey."
+- Age (18-90, numeric input with inline validation)
+- Gender (Male / Female / Other / Prefer not to answer)
+- Education level (High school / Some college / Bachelor's / Master's / Doctorate / Other)
+- Employment status (Full-time / Part-time / Self-employed / Student / Unemployed / Retired / Prefer not to answer)
+- Annual household income (Under $25k / $25-50k / $50-75k / $75-100k / $100-150k / $150k+ / Prefer not to answer)
+
+
+================================================================================
+PAGE 12. CONCLUSION
+================================================================================
+
+App: conclusion
+Page class: Conclusion
+
+Participant-facing content
+- "You have completed the study."
+- "Thank you for your time and thoughtful responses."
+- Auto-redirect to Prolific after 3 seconds
+- Fallback link: "Return to Prolific"
+
+Implementation notes
+- Prolific completion URL configured in session config
+- JavaScript auto-redirect with 3-second delay
+
+
+================================================================================
+IMPLEMENTATION NOTES
+================================================================================
+
+Randomization
+- Task order is fully randomized across the 4 tasks per participant
+- Treatment (fast_stream / slow_stream) assigned once per participant via round-robin, held constant across all tasks
+
+Session configurations
+- "LLM Experiment (random assignment)" — for production/Prolific runs
+- "LLM Experiment - Fast Stream" — forces fast_stream for coauthor testing
+- "LLM Experiment - Slow Stream" — forces slow_stream for coauthor testing
+
+Page timing
+- All pages extend TimedPage, which records entry time and elapsed milliseconds
+- Page times stored in participant.vars['page_times'] and player.page_times (JSON)
+
+Gating logic (TimedPage.is_displayed)
+- Consent declined -> all subsequent pages hidden
+- Failed attention check -> all subsequent pages hidden (except FailedAttentionPage and Conclusion)
+
+Data collected per task round
+- task_id, treatment
+- pre_numeric_response, post_numeric_response
+- pre_confidence, post_confidence
+- cognitive_trust, affective_trust, confidence_in_ai
+- io_history (JSON: full interaction log with timestamps)
+- interrupt_latency_submit, interrupt_latency_stream
+- reflection_time
+- interrupted_stream
+- page_times (JSON)
+
+Prolific integration
+- Completion URL: configured via prolific_completion_url in session config
+- Auto-redirect on conclusion page
+
+Validation rules
+- Trolley: 0-100
+- Dictator: 0-100
+- Time preference: 75-200
+- Gneezy-Potters: 0-100
+- Age: 18-90 (inline JS + server-side)
+
+Changes from previous version (2025 -> 2026-03-19)
+- Reduced from 6 tasks to 4 (removed Ultimatum Game, NPV, Asset Allocation)
+- Simplified from 2x2 design (start delay x stream speed) to single-factor (stream speed only)
+- Dropped start delay manipulation due to confound with perceived deliberation
+- Reduced slow stream from 500ms to 300ms per word for ecological validity
+- Moved trust/NFC/prior AI measures from pre-task to post-task survey
+- Added manipulation check page (3 perceived speed items)
+- Added attention check filtering (failed practice -> blocked)
+- Added employment status and income range to demographics
+- Added Prolific auto-redirect on conclusion
+- Cleaned up all participant-facing text for consistency (AI terminology, removed redundant titles)

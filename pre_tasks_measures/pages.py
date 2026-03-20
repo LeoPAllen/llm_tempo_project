@@ -1,18 +1,55 @@
-from otree.api import Currency as c, currency_range
-from ._builtin import Page, WaitPage
-from .models import Constants
+from shared.timed_page import TimedPage
+
+from tasks.models import Constants as TaskConstants
 
 
-class MyPage(Page):
-    pass
+PRACTICE_PROMPT = (
+    'What is a common example of camouflage in the animal kingdom?'
+)
+
+PRACTICE_OUTPUT = (
+    'Animals like the arctic fox use camouflage, such as changing fur color from white in '
+    'the winter to brown in the summer, to blend into their environment.'
+)
 
 
-class ResultsWaitPage(WaitPage):
-    pass
+class PracticePage(TimedPage):
+    form_model = 'player'
+    form_fields = ['practice_io_history', 'practice_attention_check']
+
+    def vars_for_template(self):
+        return dict(
+            practice_prompt=PRACTICE_PROMPT,
+            llm_output=PRACTICE_OUTPUT,
+        )
+
+    def js_vars(self):
+        return dict(practice_output=PRACTICE_OUTPUT)
+
+    @staticmethod
+    def live_method(player, data):
+        return {player.id_in_group: dict(output=PRACTICE_OUTPUT, input=data.get('input', ''))}
+
+    def before_next_page(self):
+        if self.player.practice_attention_check != 'white':
+            self.participant.vars['failed_attention'] = True
+        else:
+            self.participant.vars['failed_attention'] = False
 
 
-class Results(Page):
-    pass
+class FailedAttentionPage(TimedPage):
+    def is_displayed(self):
+        return self.participant.vars.get('failed_attention', False)
 
 
-page_sequence = [MyPage]
+class TransitionPage(TimedPage):
+    def is_displayed(self):
+        if self.participant.vars.get('failed_attention', False):
+            return False
+        return super().is_displayed()
+
+    def vars_for_template(self):
+        return dict(total_rounds=TaskConstants.num_rounds)
+
+
+page_sequence = [PracticePage, FailedAttentionPage, TransitionPage]

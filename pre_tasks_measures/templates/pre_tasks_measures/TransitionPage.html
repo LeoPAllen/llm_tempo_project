@@ -1,0 +1,23 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block content %}
+<div class="study-page">
+<h3 class="study-title">Ready to Begin</h3>
+
+<p>Great job on the practice round! You now know how the AI works.</p>
+
+<p>You will now complete <strong>{{ total_rounds }} decision-making tasks</strong>. For each task:</p>
+
+<ol>
+<li>You will read a scenario and give your <strong>initial answer</strong>.</li>
+<li>You can <strong>ask the AI for advice</strong>.</li>
+<li>You may then <strong>update your answer</strong> if you wish.</li>
+<li>Finally, you will answer a few short questions about the AI's advice.</li>
+</ol>
+
+<p>Take your time on each task. There are no right or wrong answers.</p>
+
+{{ next_button }}
+</div>
+{% endblock %}
