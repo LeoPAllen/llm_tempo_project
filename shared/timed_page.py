@@ -16,7 +16,18 @@ class TimedPage(Page):
             elapsed_ms = int((datetime.now(timezone.utc) - start).total_seconds() * 1000)
             page_times = self.participant.vars.get('page_times', {})
             key = f'{self.__class__.__name__}_round_{self.round_number}'
-            page_times[key] = elapsed_ms
+            visibility_data = None
+            if hasattr(self, 'request'):
+                raw_visibility = self.request.POST.get('visibility_data')
+                if raw_visibility:
+                    try:
+                        visibility_data = json.loads(raw_visibility)
+                    except json.JSONDecodeError:
+                        visibility_data = dict(parse_error=True, raw=raw_visibility)
+            page_times[key] = dict(
+                elapsed_ms=elapsed_ms,
+                visibility=visibility_data,
+            )
             self.participant.vars['page_times'] = page_times
             self.player.page_times = json.dumps(page_times)
 

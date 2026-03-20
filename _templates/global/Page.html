@@ -6,4 +6,66 @@
 {% endblock %}
 
 {% block global_scripts  %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.querySelector("form");
+  if (!form) return;
+
+  let visibilityField = form.querySelector('input[name="visibility_data"]');
+  if (!visibilityField) {
+    visibilityField = document.createElement("input");
+    visibilityField.type = "hidden";
+    visibilityField.name = "visibility_data";
+    form.appendChild(visibilityField);
+  }
+
+  const pageLoadedAtMs = Date.now();
+  let hiddenStartedAtMs = document.hidden ? Date.now() : null;
+  let hiddenCount = document.hidden ? 1 : 0;
+  let hiddenDurationMs = 0;
+  const hiddenIntervals = [];
+
+  function closeCurrentHiddenInterval(endedAtMs) {
+    if (hiddenStartedAtMs === null) return;
+    const durationMs = Math.max(0, endedAtMs - hiddenStartedAtMs);
+    hiddenDurationMs += durationMs;
+    hiddenIntervals.push({
+      started_at_ms: hiddenStartedAtMs,
+      ended_at_ms: endedAtMs,
+      duration_ms: durationMs
+    });
+    hiddenStartedAtMs = null;
+  }
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden") {
+      if (hiddenStartedAtMs === null) {
+        hiddenStartedAtMs = Date.now();
+        hiddenCount += 1;
+      }
+      return;
+    }
+    closeCurrentHiddenInterval(Date.now());
+  });
+
+  function buildVisibilityPayload() {
+    const submittedAtMs = Date.now();
+    const currentHiddenDurationMs =
+      hiddenStartedAtMs === null ? 0 : Math.max(0, submittedAtMs - hiddenStartedAtMs);
+
+    return {
+      page_loaded_at_ms: pageLoadedAtMs,
+      submitted_at_ms: submittedAtMs,
+      hidden_count: hiddenCount,
+      hidden_duration_ms: hiddenDurationMs + currentHiddenDurationMs,
+      hidden_intervals: hiddenIntervals,
+      page_hidden_on_submit: hiddenStartedAtMs !== null
+    };
+  }
+
+  form.addEventListener("submit", function () {
+    visibilityField.value = JSON.stringify(buildVisibilityPayload());
+  });
+});
+</script>
 {% endblock %}

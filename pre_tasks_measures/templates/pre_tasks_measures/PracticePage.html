@@ -7,6 +7,8 @@
 
 <p>In this study, you will complete a series of decision-making tasks with the help of an AI assistant. Before we start, let's do a quick practice so you can see how the AI tool works.</p>
 
+<p>Please stay in this browser window and complete the study in one sitting.</p>
+
 <p>Below is a sample question. Click <strong>Ask AI</strong> to send it to the AI and see its response, then answer the question that follows.</p>
 
 <div id="chat-container" class="study-chat-container">
@@ -36,6 +38,7 @@
 {% endblock %}
 
 {% block global_scripts %}
+{{ block.super }}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   var askBtn = document.getElementById("ask-btn");
