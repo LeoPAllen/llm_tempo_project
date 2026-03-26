@@ -5,7 +5,6 @@ class ManipulationCheckPage(TimedPage):
     form_model = 'player'
     form_fields = [
         'manip_ai_responded_quickly',
-        'manip_waited_long',
         'manip_words_appeared_fast',
     ]
 

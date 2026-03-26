@@ -27,11 +27,6 @@ class Player(BasePlayer):
         label='The AI responded quickly to my questions.',
         widget=widgets.RadioSelectHorizontal,
     )
-    manip_waited_long = models.IntegerField(
-        choices=LIKERT_7,
-        label='I had to wait a long time before the AI started responding.',
-        widget=widgets.RadioSelectHorizontal,
-    )
     manip_words_appeared_fast = models.IntegerField(
         choices=LIKERT_7,
         label="The AI's words appeared on screen at a fast pace.",
