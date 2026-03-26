@@ -49,6 +49,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var nextBtn = document.getElementById("next-button");
   var attentionSection = document.getElementById("attention-section");
   var outputText = js_vars?.practice_output || "";
+  var streamDelay = js_vars?.practice_stream_delay || 100;
 
   var submitted = false;
 
@@ -93,7 +94,7 @@ document.addEventListener("DOMContentLoaded", function () {
       observedOutput += words[i] + " ";
       assistantText.textContent = observedOutput;
       conversationDiv.scrollTop = conversationDiv.scrollHeight;
-      await new Promise(function (resolve) { setTimeout(resolve, 100); });
+      await new Promise(function (resolve) { setTimeout(resolve, streamDelay); });
     }
 
     // Save history

@@ -69,10 +69,10 @@ TASKS = {
             'What is the minimum I should wait for?'
         ),
         'llm_output': (
-            'I recommend waiting for anything above 78 USD. Even a small premium is worth a '
-            '10-day wait since the payment is guaranteed and the effective return is very high.'
+            'I recommend waiting for anything above 85 USD. Since the payment is guaranteed, '
+            'it makes sense to wait only if the delayed amount is meaningfully larger than 75 USD.'
         ),
-        'llm_recommendation': 78,
+        'llm_recommendation': 86,
     },
     'gneezy_potters': {
         'title': 'Decision Task',
@@ -119,6 +119,8 @@ class Subsession(BaseSubsession):
                 player.participant.vars['task_order'] = task_order
                 if forced:
                     player.participant.vars['llm_treatment'] = forced
+                elif player.participant.vars.get('llm_treatment'):
+                    pass
                 else:
                     player.participant.vars['llm_treatment'] = next(treatments)
 

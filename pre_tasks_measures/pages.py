@@ -24,7 +24,13 @@ class PracticePage(TimedPage):
         )
 
     def js_vars(self):
-        return dict(practice_output=PRACTICE_OUTPUT)
+        treatment = self.participant.vars.get('llm_treatment', 'fast_stream')
+        practice_stream_delay = 100 if treatment == 'fast_stream' else 350
+        return dict(
+            practice_output=PRACTICE_OUTPUT,
+            practice_treatment=treatment,
+            practice_stream_delay=practice_stream_delay,
+        )
 
     @staticmethod
     def live_method(player, data):

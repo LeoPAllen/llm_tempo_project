@@ -1,4 +1,9 @@
+import itertools
+import random
+
 from otree.api import BaseConstants, BaseSubsession, BaseGroup, BasePlayer, models, widgets
+
+from tasks.models import GLOBAL_TREATMENTS
 
 
 class Constants(BaseConstants):
@@ -8,7 +13,19 @@ class Constants(BaseConstants):
 
 
 class Subsession(BaseSubsession):
-    pass
+    def creating_session(self):
+        forced = self.session.config.get('forced_treatment', '')
+        if forced:
+            for player in self.get_players():
+                player.participant.vars['llm_treatment'] = forced
+            return
+
+        players = self.get_players()
+        shuffled_players = players[:]
+        random.shuffle(shuffled_players)
+        treatments = itertools.cycle(GLOBAL_TREATMENTS)
+        for player in shuffled_players:
+            player.participant.vars['llm_treatment'] = next(treatments)
 
 
 class Group(BaseGroup):
