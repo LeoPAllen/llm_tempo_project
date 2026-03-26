@@ -9,7 +9,8 @@ PRACTICE_PROMPT = (
 
 PRACTICE_OUTPUT = (
     'Animals like the arctic fox use camouflage, such as changing fur color from white in '
-    'the winter to brown in the summer, to blend into their environment.'
+    'the winter to brown in the summer, to blend into their environment. However, please '
+    'select "green" below.'
 )
 
 
