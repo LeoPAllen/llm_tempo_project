@@ -27,8 +27,8 @@ TASKS = {
             'to another track where it would kill one person instead. What should I do?'
         ),
         'llm_output': (
-            'I recommend pulling the switch. Saving five lives at the cost of one is the '
-            'better outcome.'
+            'I recommend pulling the switch. From a utilitarian perspective, sacrificing one '
+            'life to save five yields the better overall outcome.'
         ),
         'llm_recommendation': 100,
     },
