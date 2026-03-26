@@ -38,7 +38,7 @@
 {% endblock %}
 
 {% block global_scripts %}
-{{ block.super }}
+{{ super() }}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   var askBtn = document.getElementById("ask-btn");

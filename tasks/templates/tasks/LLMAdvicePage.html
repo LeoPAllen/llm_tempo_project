@@ -42,6 +42,7 @@
 {% endblock %}
 
 {% block global_scripts %}
+{{ super() }}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   var treatment = js_vars?.treatment || "undefined";

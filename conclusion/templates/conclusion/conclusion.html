@@ -18,6 +18,7 @@
 {% endblock %}
 
 {% block global_scripts %}
+{{ super() }}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   var url = "{{ prolific_completion_url }}";

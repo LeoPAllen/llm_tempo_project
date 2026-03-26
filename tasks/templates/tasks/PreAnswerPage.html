@@ -29,6 +29,7 @@
 {% endblock %}
 
 {% block global_scripts %}
+{{ super() }}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   var input = document.querySelector('input[name="pre_numeric_response"]');

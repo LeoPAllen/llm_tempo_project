@@ -16,6 +16,7 @@
 {% endblock %}
 
 {% block global_scripts %}
+{{ super() }}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   var ageInput = document.querySelector('input[name="age"]');

@@ -31,6 +31,7 @@ class PracticePage(TimedPage):
         return {player.id_in_group: dict(output=PRACTICE_OUTPUT, input=data.get('input', ''))}
 
     def before_next_page(self):
+        super().before_next_page()
         if self.player.practice_attention_check != 'white':
             self.participant.vars['failed_attention'] = True
         else:

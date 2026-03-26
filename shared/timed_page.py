@@ -17,8 +17,8 @@ class TimedPage(Page):
             page_times = self.participant.vars.get('page_times', {})
             key = f'{self.__class__.__name__}_round_{self.round_number}'
             visibility_data = None
-            if hasattr(self, 'request'):
-                raw_visibility = self.request.POST.get('visibility_data')
+            if getattr(self, '_form_data', None):
+                raw_visibility = self._form_data.get('visibility_data')
                 if raw_visibility:
                     try:
                         visibility_data = json.loads(raw_visibility)
