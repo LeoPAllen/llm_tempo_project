@@ -1,0 +1,14 @@
+{% extends "global/Page.html" %}
+{% block content %}
+<div class="study-page">
+<h3 class="study-title">Study Ended</h3>
+
+<p>Unfortunately, we are unable to continue with the study.</p>
+
+<p>{{ termination_reason }}</p>
+
+<p>{{ payment_note }}</p>
+
+<p style="color: #627d98; font-size: 0.9rem;">You may now close this window.</p>
+</div>
+{% endblock %}

@@ -38,8 +38,9 @@ class PracticePage(TimedPage):
 
     def before_next_page(self):
         super().before_next_page()
-        if self.player.practice_attention_check != 'white':
+        if self.player.practice_attention_check != 'green':
             self.participant.vars['failed_attention'] = True
+            self.participant.vars['terminated_without_pay'] = True
         else:
             self.participant.vars['failed_attention'] = False
 

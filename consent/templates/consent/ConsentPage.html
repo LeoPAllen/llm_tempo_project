@@ -8,6 +8,8 @@
 
 <p>The study takes approximately <strong>15 minutes</strong> to complete.</p>
 
+<p><strong>None of the tasks have a right or wrong answer; we are interested in how you approach the decisions.</strong></p>
+
 <div class="study-panel">
 <p><strong>A few things to know before we begin:</strong></p>
 <ul style="margin: 0.5rem 0 0; padding-left: 1.2rem;">
@@ -20,7 +22,9 @@
 </ul>
 </div>
 
-{{ formfields }}
+<input type="hidden" name="prolific_id" value="{{ prolific_id }}">
+
+{{ formfield 'consent' }}
 {{ next_button }}
 
 </div>

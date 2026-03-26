@@ -33,4 +33,7 @@ class Player(BasePlayer):
         label='Do you agree to participate in this study?',
         widget=widgets.RadioSelect,
     )
+    prolific_id = models.StringField(
+        blank=True,
+    )
     page_times = models.LongStringField(blank=True)

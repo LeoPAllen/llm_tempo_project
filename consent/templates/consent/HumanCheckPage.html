@@ -1,0 +1,16 @@
+{% extends "global/Page.html" %}
+{% block content %}
+<div class="study-page">
+<h3 class="study-title">Before You Begin</h3>
+
+<p>Please answer the question below to continue.</p>
+
+<div class="study-panel">
+<p><strong>Type the third word in this list:</strong></p>
+<p>{{ screening_words|join:", " }}</p>
+</div>
+
+{{ formfields }}
+{{ next_button }}
+</div>
+{% endblock %}

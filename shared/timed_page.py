@@ -33,14 +33,14 @@ class TimedPage(Page):
 
     def is_displayed(self):
         from consent.pages import ConsentPage  # import here to avoid circular imports
-        from conclusion.pages import Conclusion
+        from consent.pages import TerminationPage
         from pre_tasks_measures.pages import FailedAttentionPage
-        # Always show consent, conclusion, and the failed attention page
-        if isinstance(self, (ConsentPage, Conclusion, FailedAttentionPage)):
+        # Always show consent and termination pages when they are the active outcome.
+        if isinstance(self, (ConsentPage, TerminationPage, FailedAttentionPage)):
             return True
+        if self.participant.vars.get('failed_attention', False):
+            return False
         # Block if consent declined or attention check failed
         if self.participant.vars.get('consent_declined', False):
-            return False
-        if self.participant.vars.get('failed_attention', False):
             return False
         return True

@@ -8,7 +8,7 @@ SESSION_CONFIGS = [
         display_name="LLM Experiment (random assignment)",
         app_sequence=_APP_SEQUENCE,
         num_demo_participants=10,
-        prolific_completion_url='https://app.prolific.com/submissions/complete?cc=XXXXXXXX',
+        prolific_completion_url='https://app.prolific.com/submissions/complete?cc=C1G69XB8',
     ),
     dict(
         name='llm_experiment_fast',
@@ -16,7 +16,7 @@ SESSION_CONFIGS = [
         app_sequence=_APP_SEQUENCE,
         num_demo_participants=2,
         forced_treatment='fast_stream',
-        prolific_completion_url='https://app.prolific.com/submissions/complete?cc=XXXXXXXX',
+        prolific_completion_url='https://app.prolific.com/submissions/complete?cc=C1G69XB8',
     ),
     dict(
         name='llm_experiment_slow',
@@ -24,7 +24,7 @@ SESSION_CONFIGS = [
         app_sequence=_APP_SEQUENCE,
         num_demo_participants=2,
         forced_treatment='slow_stream',
-        prolific_completion_url='https://app.prolific.com/submissions/complete?cc=XXXXXXXX',
+        prolific_completion_url='https://app.prolific.com/submissions/complete?cc=C1G69XB8',
     ),
 ]
 
@@ -45,7 +45,7 @@ SESSION_CONFIG_DEFAULTS = dict(
     real_world_currency_per_point=1.00, participation_fee=0.00, doc=""
 )
 
-PARTICIPANT_FIELDS = ['task_order', 'llm_treatment', 'page_times', 'consent_declined']
+PARTICIPANT_FIELDS = ['task_order', 'llm_treatment', 'page_times', 'consent_declined', 'prolific_id']
 SESSION_FIELDS = []
 
 # ISO-639 code

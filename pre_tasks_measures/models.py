@@ -44,6 +44,6 @@ class Player(BasePlayer):
             ('brown', 'Brown'),
             ('green', 'Green'),
         ],
-        label="Based on the AI's response, what color are arctic foxes in the winter?",
+        label='Based on the AI response above, what color are arctic foxes in the winter? However, please select "green" below.',
         widget=widgets.RadioSelect,
     )
