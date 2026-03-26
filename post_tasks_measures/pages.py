@@ -2,6 +2,7 @@ from shared.timed_page import TimedPage
 
 
 class ManipulationCheckPage(TimedPage):
+    template_name = 'post_tasks_measures/ManipulationCheckPage.html'
     form_model = 'player'
     form_fields = [
         'manip_ai_responded_quickly',
@@ -10,6 +11,7 @@ class ManipulationCheckPage(TimedPage):
 
 
 class PostSurveyPage(TimedPage):
+    template_name = 'post_tasks_measures/PostSurveyPage.html'
     form_model = 'player'
     form_fields = [
         'overall_ai_future_use',
@@ -26,6 +28,7 @@ class PostSurveyPage(TimedPage):
 
 
 class DemographicsPage(TimedPage):
+    template_name = 'post_tasks_measures/DemographicsPage.html'
     form_model = 'player'
     form_fields = [
         'age',

@@ -18,6 +18,7 @@ def debug_context(player: Player):
 
 class PreAnswerPage(TimedPage):
     """Page 1: Scenario + pre-answer + pre-confidence"""
+    template_name = 'tasks/PreAnswerPage.html'
     form_model = 'player'
 
     def get_form_fields(self):
@@ -42,6 +43,7 @@ class PreAnswerPage(TimedPage):
 
 class LLMAdvicePage(TimedPage):
     """Page 2: LLM interaction (Ask AI + streaming response)"""
+    template_name = 'tasks/LLMAdvicePage.html'
     form_model = 'player'
     form_fields = [
         'io_history',
@@ -72,6 +74,7 @@ class LLMAdvicePage(TimedPage):
 
 class RevisedAnswerPage(TimedPage):
     """Page 3: Revised answer + post self-confidence"""
+    template_name = 'tasks/RevisedAnswerPage.html'
     form_model = 'player'
 
     def get_form_fields(self):
@@ -95,6 +98,7 @@ class RevisedAnswerPage(TimedPage):
 
 class MechanismMeasuresPage(TimedPage):
     """Page 4: Cognitive trust, affective trust, confidence in AI"""
+    template_name = 'tasks/MechanismMeasuresPage.html'
     form_model = 'player'
     form_fields = [
         'post_confidence',

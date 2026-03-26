@@ -15,6 +15,7 @@ PRACTICE_OUTPUT = (
 
 
 class PracticePage(TimedPage):
+    template_name = 'pre_tasks_measures/PracticePage.html'
     form_model = 'player'
     form_fields = ['practice_io_history', 'practice_attention_check']
 
@@ -47,11 +48,15 @@ class PracticePage(TimedPage):
 
 
 class FailedAttentionPage(TimedPage):
+    template_name = 'pre_tasks_measures/FailedAttentionPage.html'
+
     def is_displayed(self):
         return self.participant.vars.get('failed_attention', False)
 
 
 class TransitionPage(TimedPage):
+    template_name = 'pre_tasks_measures/TransitionPage.html'
+
     def is_displayed(self):
         if self.participant.vars.get('failed_attention', False):
             return False

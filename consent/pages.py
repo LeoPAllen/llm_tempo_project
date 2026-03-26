@@ -3,6 +3,7 @@ from .models import Constants
 from shared.timed_page import TimedPage
 
 class ConsentPage(TimedPage):
+    template_name = 'consent/ConsentPage.html'
     form_model = 'player'
     form_fields = ['consent', 'prolific_id']
 

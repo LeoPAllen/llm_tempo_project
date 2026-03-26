@@ -2,6 +2,8 @@ from shared.timed_page import TimedPage
 
 
 class Conclusion(TimedPage):
+    template_name = 'conclusion/conclusion.html'
+
     def vars_for_template(self):
         return dict(
             prolific_completion_url=self.session.config.get(
