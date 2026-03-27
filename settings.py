@@ -8,7 +8,7 @@ SESSION_CONFIGS = [
         display_name="LLM Experiment (random assignment)",
         app_sequence=_APP_SEQUENCE,
         num_demo_participants=15,
-        prolific_completion_url='https://app.prolific.com/submissions/complete?cc=C1G69XB8',
+        prolific_completion_url='https://app.prolific.com/submissions/complete?cc=CE5OTGY5',
     ),
     dict(
         name='llm_experiment_fast',
@@ -16,7 +16,7 @@ SESSION_CONFIGS = [
         app_sequence=_APP_SEQUENCE,
         num_demo_participants=15,
         forced_treatment='fast_stream',
-        prolific_completion_url='https://app.prolific.com/submissions/complete?cc=C1G69XB8',
+        prolific_completion_url='https://app.prolific.com/submissions/complete?cc=CE5OTGY5',
     ),
     dict(
         name='llm_experiment_slow',
@@ -24,7 +24,7 @@ SESSION_CONFIGS = [
         app_sequence=_APP_SEQUENCE,
         num_demo_participants=15,
         forced_treatment='slow_stream',
-        prolific_completion_url='https://app.prolific.com/submissions/complete?cc=C1G69XB8',
+        prolific_completion_url='https://app.prolific.com/submissions/complete?cc=CE5OTGY5',
     ),
 ]
 
