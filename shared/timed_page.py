@@ -4,9 +4,35 @@ from datetime import datetime, timezone
 
 
 class TimedPage(Page):
+    def _capture_prolific_id(self):
+        request = getattr(self, 'request', None)
+        participant_label = (getattr(self.participant, 'label', '') or '').strip()
+        stored = (self.participant.vars.get('prolific_id', '') or '').strip()
+
+        if not request:
+            prolific_id = stored or participant_label
+        else:
+            query_params = getattr(request, 'query_params', None)
+            get_params = getattr(request, 'GET', None)
+            params = query_params or get_params or {}
+            prolific_id = (
+                params.get('PROLIFIC_PID', '')
+                or params.get('prolific_pid', '')
+                or params.get('participant_id', '')
+                or params.get('participant_label', '')
+                or stored
+                or participant_label
+            ).strip()
+
+        if prolific_id:
+            self.participant.vars['prolific_id'] = prolific_id
+            if not participant_label:
+                self.participant.label = prolific_id
+
     def get_context_data(self, **kwargs):
         """Override Django's get_context_data to always record page entry time.
         This runs regardless of whether subclasses override vars_for_template."""
+        self._capture_prolific_id()
         self.participant.vars['page_entry_time'] = datetime.now(timezone.utc)
         return super().get_context_data(**kwargs)
 

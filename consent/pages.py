@@ -10,14 +10,19 @@ class ConsentPage(TimedPage):
     @staticmethod
     def _extract_prolific_id(page):
         request = getattr(page, 'request', None)
+        participant_label = (getattr(page.participant, 'label', '') or '').strip()
+        stored = (page.participant.vars.get('prolific_id', '') or '').strip()
         if not request:
-            return ''
+            return stored or participant_label
         query_params = getattr(request, 'query_params', None)
         if query_params:
             return (
                 query_params.get('PROLIFIC_PID', '')
                 or query_params.get('prolific_pid', '')
                 or query_params.get('participant_id', '')
+                or query_params.get('participant_label', '')
+                or stored
+                or participant_label
             )
         get_params = getattr(request, 'GET', None)
         if get_params:
@@ -25,14 +30,19 @@ class ConsentPage(TimedPage):
                 get_params.get('PROLIFIC_PID', '')
                 or get_params.get('prolific_pid', '')
                 or get_params.get('participant_id', '')
+                or get_params.get('participant_label', '')
+                or stored
+                or participant_label
             )
-        return ''
+        return stored or participant_label
 
     def before_next_page(self):
         super().before_next_page()
         submitted_prolific_id = (self.player.prolific_id or '').strip()
         prolific_id = submitted_prolific_id or self._extract_prolific_id(self)
         self.player.prolific_id = prolific_id
+        if prolific_id and not self.participant.label:
+            self.participant.label = prolific_id
         self.participant.vars['prolific_id'] = prolific_id
         if self.player.consent != 'yes':
             self.participant.vars['consent_declined'] = True
