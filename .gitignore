@@ -11,6 +11,17 @@ __pycache__/
 *.py[cod]
 .DS_Store
 *.otreezip
+
+# Research data should stay outside the Heroku deploy repo.
+# These rules are defensive in case study folders are copied here later.
+pilot/
+study/
+analysis/
+experiment_data/
+*.dump
+*.backup
+*.sql
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
