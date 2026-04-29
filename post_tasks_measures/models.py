@@ -36,7 +36,7 @@ class Player(BasePlayer):
     # Overall AI experience in this study
     overall_ai_future_use = models.IntegerField(
         choices=LIKERT_7,
-        label='I would use a similar AI again for tasks like these.',
+        label='I would use a similar AI again for decisions like this.',
         widget=widgets.RadioSelectHorizontal,
     )
     overall_ai_thoughtful = models.IntegerField(

@@ -1,7 +1,11 @@
 from shared.timed_page import TimedPage
 
-from tasks.models import Constants as TaskConstants
+from tasks.models import STREAM_DELAYS_MS, get_active_task_ids
 
+
+PRACTICE_STREAM_DELAY_MS = round(
+    sum(STREAM_DELAYS_MS.values()) / len(STREAM_DELAYS_MS)
+)
 
 PRACTICE_PROMPT = (
     'What is a common example of camouflage in the animal kingdom?'
@@ -26,12 +30,9 @@ class PracticePage(TimedPage):
         )
 
     def js_vars(self):
-        treatment = self.participant.vars.get('llm_treatment', 'fast_stream')
-        practice_stream_delay = 100 if treatment == 'fast_stream' else 350
         return dict(
             practice_output=PRACTICE_OUTPUT,
-            practice_treatment=treatment,
-            practice_stream_delay=practice_stream_delay,
+            practice_stream_delay=PRACTICE_STREAM_DELAY_MS,
         )
 
     @staticmethod
@@ -63,7 +64,8 @@ class TransitionPage(TimedPage):
         return super().is_displayed()
 
     def vars_for_template(self):
-        return dict(total_rounds=TaskConstants.num_rounds)
+        total_rounds = len(get_active_task_ids(self.session))
+        return dict(total_rounds=total_rounds)
 
 
 page_sequence = [PracticePage, FailedAttentionPage, TransitionPage]

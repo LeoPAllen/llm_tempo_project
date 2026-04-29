@@ -7,7 +7,11 @@
 
 <p>Great job on the practice round! You now know how the AI works.</p>
 
+{% if total_rounds == 1 %}
+<p>You will now complete <strong>1 decision-making task</strong>. In this task:</p>
+{% else %}
 <p>You will now complete <strong>{{ total_rounds }} decision-making tasks</strong>. For each task:</p>
+{% endif %}
 
 <ol>
 <li>You will read a scenario and give your <strong>initial answer</strong>.</li>
@@ -16,7 +20,11 @@
 <li>Finally, you will answer a few short questions about the AI's advice.</li>
 </ol>
 
+{% if total_rounds == 1 %}
+<p>Take your time with the task. There are no right or wrong answers.</p>
+{% else %}
 <p>Take your time on each task. There are no right or wrong answers.</p>
+{% endif %}
 
 {{ next_button }}
 </div>

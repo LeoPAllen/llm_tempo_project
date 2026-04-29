@@ -2,11 +2,21 @@ from os import environ
 
 from shared.timed_page import TimedPage
 
-from .models import TASKS, Player, Constants
+from .models import (
+    Player,
+    STREAM_DELAYS_MS,
+    get_active_task_ids,
+    get_task_definition,
+    is_study_1_session,
+)
 
 
 def current_task(player: Player):
-    return TASKS[player.task_id]
+    return get_task_definition(player)
+
+
+def is_active_task_round(player: Player):
+    return bool(player.task_id)
 
 
 def debug_context(player: Player):
@@ -16,7 +26,12 @@ def debug_context(player: Player):
     )
 
 
-class PreAnswerPage(TimedPage):
+class ActiveTaskPage(TimedPage):
+    def is_displayed(self):
+        return super().is_displayed() and is_active_task_round(self.player)
+
+
+class PreAnswerPage(ActiveTaskPage):
     """Page 1: Scenario + pre-answer + pre-confidence"""
     template_name = 'tasks/PreAnswerPage.html'
     form_model = 'player'
@@ -29,7 +44,7 @@ class PreAnswerPage(TimedPage):
         return dict(
             task=task,
             round_number=self.round_number,
-            total_rounds=Constants.num_rounds,
+            total_rounds=len(get_active_task_ids(self.session)),
             **debug_context(self.player),
         )
 
@@ -41,7 +56,7 @@ class PreAnswerPage(TimedPage):
             return 'Please enter a number between 0 and 100.'
 
 
-class LLMAdvicePage(TimedPage):
+class LLMAdvicePage(ActiveTaskPage):
     """Page 2: LLM interaction (Ask AI + streaming response)"""
     template_name = 'tasks/LLMAdvicePage.html'
     form_model = 'player'
@@ -50,6 +65,12 @@ class LLMAdvicePage(TimedPage):
         'interrupt_latency_submit',
         'interrupt_latency_stream',
         'interrupted_stream',
+        'advice_page_loaded_at_ms',
+        'advice_stream_started_at_ms',
+        'advice_stream_ended_at_ms',
+        'advice_next_clicked_at_ms',
+        'advice_elapsed_load_to_next_ms',
+        'advice_elapsed_stream_end_to_next_ms',
     ]
 
     def vars_for_template(self):
@@ -64,15 +85,42 @@ class LLMAdvicePage(TimedPage):
         task = current_task(self.player)
         return dict(
             treatment=self.player.treatment,
+            stream_delay_ms=STREAM_DELAYS_MS.get(
+                self.player.treatment, STREAM_DELAYS_MS['fast_stream']
+            ),
             llm_output=task['llm_output'],
         )
 
     @staticmethod
     def live_method(player, data):
-        return {player.id_in_group: dict(output=TASKS[player.task_id]['llm_output'], input=data.get('input', ''))}
+        task = current_task(player)
+        return {
+            player.id_in_group: dict(
+                output=task['llm_output'], input=data.get('input', '')
+            )
+        }
+
+    def before_next_page(self):
+        super().before_next_page()
+        loaded_at = self.player.advice_page_loaded_at_ms
+        stream_ended_at = self.player.advice_stream_ended_at_ms
+        next_clicked_at = self.player.advice_next_clicked_at_ms
+
+        if loaded_at and next_clicked_at and not self.player.advice_elapsed_load_to_next_ms:
+            self.player.advice_elapsed_load_to_next_ms = max(
+                0, next_clicked_at - loaded_at
+            )
+        if (
+            stream_ended_at
+            and next_clicked_at
+            and not self.player.advice_elapsed_stream_end_to_next_ms
+        ):
+            self.player.advice_elapsed_stream_end_to_next_ms = max(
+                0, next_clicked_at - stream_ended_at
+            )
 
 
-class RevisedAnswerPage(TimedPage):
+class RevisedAnswerPage(ActiveTaskPage):
     """Page 3: Revised answer + post self-confidence"""
     template_name = 'tasks/RevisedAnswerPage.html'
     form_model = 'player'
@@ -96,20 +144,29 @@ class RevisedAnswerPage(TimedPage):
             return 'Please enter a number between 0 and 100.'
 
 
-class MechanismMeasuresPage(TimedPage):
+class MechanismMeasuresPage(ActiveTaskPage):
     """Page 4: Cognitive trust, affective trust, confidence in AI"""
     template_name = 'tasks/MechanismMeasuresPage.html'
     form_model = 'player'
-    form_fields = [
-        'post_confidence',
-        'cognitive_trust',
-        'affective_trust',
-        'confidence_in_ai',
-    ]
+
+    def get_form_fields(self):
+        fields = [
+            'post_confidence',
+            'cognitive_trust',
+            'affective_trust',
+            'confidence_in_ai',
+        ]
+        if is_study_1_session(self.session):
+            fields.extend(['cognitive_tax', 'ai_effort'])
+        return fields
 
     def vars_for_template(self):
         task = current_task(self.player)
-        return dict(task=task, **debug_context(self.player))
+        return dict(
+            task=task,
+            is_study_1=is_study_1_session(self.session),
+            **debug_context(self.player),
+        )
 
 
 page_sequence = [

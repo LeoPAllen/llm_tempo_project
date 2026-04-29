@@ -1,6 +1,7 @@
 from otree.api import *
 from .models import Constants
 from shared.timed_page import TimedPage
+from tasks.models import get_active_task_ids
 
 class ConsentPage(TimedPage):
     template_name = 'consent/ConsentPage.html'
@@ -49,8 +50,14 @@ class ConsentPage(TimedPage):
             self.participant.vars['terminated_without_pay'] = True
 
     def vars_for_template(self):
+        estimated_minutes = self.session.config.get(
+            'estimated_minutes', Constants.estimated_minutes
+        )
+        total_tasks = len(get_active_task_ids(self.session))
         return dict(
-            estimated_minutes=Constants.estimated_minutes,
+            estimated_minutes=estimated_minutes,
+            estimated_minutes_label='minute' if estimated_minutes == 1 else 'minutes',
+            total_tasks=total_tasks,
             contact_email=Constants.contact_email,
             prolific_id=self._extract_prolific_id(self),
         )

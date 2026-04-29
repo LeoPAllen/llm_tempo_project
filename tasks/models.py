@@ -9,6 +9,17 @@ GLOBAL_TREATMENTS = [
     'fast_stream',
     'slow_stream',
 ]
+STREAM_DELAYS_MS = {
+    'fast_stream': 100,
+    'slow_stream': 350,
+}
+STUDY_1_ID = 'study_1'
+STUDY_1_TASK_IDS = ['dictator']
+STUDY_1_ADVICE_AMOUNTS = [15, 25, 35, 45]
+STUDY_1_ADVICE_TEXT_TEMPLATE = (
+    'I recommend giving {amount} USD. This balances fairness with self-interest, '
+    'and is in line with what would be considered reasonable.'
+)
 LIKERT_7 = [(i, str(i)) for i in range(1, 8)]
 
 TASKS = {
@@ -99,6 +110,101 @@ TASKS = {
 }
 
 
+DEFAULT_TASK_IDS = list(TASKS.keys())
+
+
+def is_study_1_session(session):
+    return session.config.get('study_id') == STUDY_1_ID
+
+
+def get_active_task_ids(session):
+    configured_task_ids = session.config.get('active_task_ids')
+    if configured_task_ids:
+        return list(configured_task_ids)
+    if is_study_1_session(session):
+        return STUDY_1_TASK_IDS[:]
+    return DEFAULT_TASK_IDS[:]
+
+
+def get_forced_advice_amount(session):
+    raw_amount = session.config.get('forced_advice_amount', None)
+    if raw_amount in (None, ''):
+        return None
+    amount = int(raw_amount)
+    if amount not in STUDY_1_ADVICE_AMOUNTS:
+        raise ValueError(f'Unsupported Study 1 advice amount: {amount}')
+    return amount
+
+
+def assign_participant_treatments(session, players):
+    """Assign speed/advice cells once per participant.
+
+    Study 1 uses balanced 2 x 4 cell assignment within the created session. The
+    legacy study keeps the existing balanced speed-only assignment pattern.
+    """
+    forced_treatment = session.config.get('forced_treatment', '')
+    if forced_treatment and forced_treatment not in GLOBAL_TREATMENTS:
+        raise ValueError(f'Unsupported treatment: {forced_treatment}')
+
+    shuffled_players = players[:]
+    random.shuffle(shuffled_players)
+
+    if is_study_1_session(session):
+        forced_advice_amount = get_forced_advice_amount(session)
+        treatments = [forced_treatment] if forced_treatment else GLOBAL_TREATMENTS
+        advice_amounts = (
+            [forced_advice_amount]
+            if forced_advice_amount is not None
+            else STUDY_1_ADVICE_AMOUNTS
+        )
+        cells = list(itertools.product(treatments, advice_amounts))
+        random.shuffle(cells)
+        treatment_cells = itertools.cycle(cells)
+        for player in shuffled_players:
+            treatment, advice_amount = next(treatment_cells)
+            player.participant.vars['llm_treatment'] = treatment
+            player.participant.vars['advice_amount'] = advice_amount
+        return
+
+    if forced_treatment:
+        for player in shuffled_players:
+            player.participant.vars['llm_treatment'] = forced_treatment
+        return
+
+    treatments = itertools.cycle(GLOBAL_TREATMENTS)
+    for player in shuffled_players:
+        player.participant.vars['llm_treatment'] = next(treatments)
+
+
+def ensure_participant_treatments(session, players):
+    if is_study_1_session(session):
+        missing_assignment = any(
+            not player.participant.vars.get('llm_treatment')
+            or player.participant.vars.get('advice_amount') is None
+            for player in players
+        )
+    else:
+        missing_assignment = any(
+            not player.participant.vars.get('llm_treatment') for player in players
+        )
+
+    if missing_assignment:
+        assign_participant_treatments(session, players)
+
+
+def study_1_advice_text(amount):
+    return STUDY_1_ADVICE_TEXT_TEMPLATE.format(amount=amount)
+
+
+def get_task_definition(player):
+    task = TASKS[player.task_id].copy()
+    if player.task_id == 'dictator' and is_study_1_session(player.session):
+        amount = player.advice_amount or player.participant.vars.get('advice_amount')
+        task['llm_output'] = study_1_advice_text(amount)
+        task['llm_recommendation'] = amount
+    return task
+
+
 class Constants(BaseConstants):
     name_in_url = 'tasks'
     players_per_group = None
@@ -109,25 +215,24 @@ class Subsession(BaseSubsession):
     def creating_session(self):
         players = self.get_players()
         if self.round_number == 1:
-            forced = self.session.config.get('forced_treatment', '')
-            treatments = itertools.cycle(GLOBAL_TREATMENTS)
-            shuffled_players = players[:]
-            random.shuffle(shuffled_players)
-            for player in shuffled_players:
-                task_order = list(TASKS.keys())
-                random.shuffle(task_order)
+            ensure_participant_treatments(self.session, players)
+            active_task_ids = get_active_task_ids(self.session)
+            randomize_order = self.session.config.get('randomize_task_order', True)
+            for player in players:
+                player.participant.vars['active_task_ids'] = active_task_ids
+                task_order = active_task_ids[:]
+                if randomize_order and len(task_order) > 1:
+                    random.shuffle(task_order)
                 player.participant.vars['task_order'] = task_order
-                if forced:
-                    player.participant.vars['llm_treatment'] = forced
-                elif player.participant.vars.get('llm_treatment'):
-                    pass
-                else:
-                    player.participant.vars['llm_treatment'] = next(treatments)
 
         for player in players:
-            task_id = player.participant.vars['task_order'][self.round_number - 1]
-            player.task_id = task_id
-            player.treatment = player.participant.vars['llm_treatment']
+            task_order = player.participant.vars.get('task_order', [])
+            if self.round_number <= len(task_order):
+                player.task_id = task_order[self.round_number - 1]
+            else:
+                player.task_id = ''
+            player.treatment = player.participant.vars.get('llm_treatment', '')
+            player.advice_amount = player.participant.vars.get('advice_amount')
             player.io_history = json.dumps([])
 
 
@@ -138,8 +243,9 @@ class Group(BaseGroup):
 class Player(BasePlayer):
     page_times = models.LongStringField(blank=True)
 
-    task_id = models.StringField()
-    treatment = models.StringField()
+    task_id = models.StringField(blank=True)
+    treatment = models.StringField(blank=True)
+    advice_amount = models.IntegerField(blank=True)
 
     # LLM interaction data
     io_history = models.LongStringField(blank=True)
@@ -147,6 +253,12 @@ class Player(BasePlayer):
     interrupt_latency_stream = models.IntegerField(blank=True)
     reflection_time = models.IntegerField(blank=True)
     interrupted_stream = models.StringField(blank=True)
+    advice_page_loaded_at_ms = models.FloatField(blank=True)
+    advice_stream_started_at_ms = models.FloatField(blank=True)
+    advice_stream_ended_at_ms = models.FloatField(blank=True)
+    advice_next_clicked_at_ms = models.FloatField(blank=True)
+    advice_elapsed_load_to_next_ms = models.FloatField(blank=True)
+    advice_elapsed_stream_end_to_next_ms = models.FloatField(blank=True)
 
     # Task responses
     pre_numeric_response = models.IntegerField(blank=True, label='Your response')
@@ -173,6 +285,16 @@ class Player(BasePlayer):
     confidence_in_ai = models.IntegerField(
         choices=LIKERT_7,
         label='The AI gave good advice on this task.',
+        widget=widgets.RadioSelectHorizontal,
+    )
+    cognitive_tax = models.IntegerField(
+        choices=LIKERT_7,
+        label='Evaluating the AI recommendation required a lot of mental effort.',
+        widget=widgets.RadioSelectHorizontal,
+    )
+    ai_effort = models.IntegerField(
+        choices=LIKERT_7,
+        label='The AI seemed to put effort into generating the recommendation.',
         widget=widgets.RadioSelectHorizontal,
     )
     post_confidence = models.IntegerField(

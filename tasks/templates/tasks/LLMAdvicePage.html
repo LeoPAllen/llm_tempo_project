@@ -30,6 +30,12 @@
 <input type="hidden" name="interrupt_latency_submit" id="interrupt-latency-submit">
 <input type="hidden" name="interrupt_latency_stream" id="interrupt-latency-stream">
 <input type="hidden" name="interrupted_stream" id="interrupted-stream">
+<input type="hidden" name="advice_page_loaded_at_ms" id="advice-page-loaded-at-ms">
+<input type="hidden" name="advice_stream_started_at_ms" id="advice-stream-started-at-ms">
+<input type="hidden" name="advice_stream_ended_at_ms" id="advice-stream-ended-at-ms">
+<input type="hidden" name="advice_next_clicked_at_ms" id="advice-next-clicked-at-ms">
+<input type="hidden" name="advice_elapsed_load_to_next_ms" id="advice-elapsed-load-to-next-ms">
+<input type="hidden" name="advice_elapsed_stream_end_to_next_ms" id="advice-elapsed-stream-end-to-next-ms">
 
 {{ formfield_errors 'io_history' }}
 
@@ -61,6 +67,13 @@ document.addEventListener("DOMContentLoaded", function () {
   var latencySubmitField = document.getElementById("interrupt-latency-submit");
   var latencyStreamField = document.getElementById("interrupt-latency-stream");
   var interruptedField = document.getElementById("interrupted-stream");
+  var pageLoadedAtField = document.getElementById("advice-page-loaded-at-ms");
+  var streamStartedAtField = document.getElementById("advice-stream-started-at-ms");
+  var streamEndedAtField = document.getElementById("advice-stream-ended-at-ms");
+  var nextClickedAtField = document.getElementById("advice-next-clicked-at-ms");
+  var elapsedLoadToNextField = document.getElementById("advice-elapsed-load-to-next-ms");
+  var elapsedStreamEndToNextField = document.getElementById("advice-elapsed-stream-end-to-next-ms");
+  var form = nextBtn.closest("form");
 
   var isStreaming = false;
   var isInterrupted = false;
@@ -68,6 +81,23 @@ document.addEventListener("DOMContentLoaded", function () {
   var streamTime = null;
   var submitted = false;
   var responseTimeout = null;
+  var pageLoadedAt = Date.now();
+
+  pageLoadedAtField.value = pageLoadedAt;
+
+  if (form) {
+    form.addEventListener("submit", function () {
+      var nextClickedAt = Date.now();
+      nextClickedAtField.value = nextClickedAt;
+
+      if (pageLoadedAtField.value) {
+        elapsedLoadToNextField.value = Math.max(0, nextClickedAt - Number(pageLoadedAtField.value));
+      }
+      if (streamEndedAtField.value) {
+        elapsedStreamEndToNextField.value = Math.max(0, nextClickedAt - Number(streamEndedAtField.value));
+      }
+    });
+  }
 
   askBtn.onclick = function () {
     if (submitted) return;
@@ -79,6 +109,11 @@ document.addEventListener("DOMContentLoaded", function () {
     latencyStreamField.value = "";
     interruptedField.value = "";
     historyField.value = "";
+    streamStartedAtField.value = "";
+    streamEndedAtField.value = "";
+    nextClickedAtField.value = "";
+    elapsedLoadToNextField.value = "";
+    elapsedStreamEndToNextField.value = "";
 
     isInterrupted = false;
     submitTime = Date.now();
@@ -137,11 +172,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     var words = fullOut.split(" ");
     var config = treatmentConfig[treatment] || { startDelay: 100, streamDelay: 100 };
+    config.streamDelay = Number(js_vars?.stream_delay_ms ?? config.streamDelay);
 
     interruptBtn.disabled = false;
     interruptBtn.style.display = "inline-block";
     await new Promise(function (resolve) { setTimeout(resolve, config.startDelay); });
     streamTime = Date.now();
+    streamStartedAtField.value = streamTime;
 
     var observedOutput = "";
     for (var i = 0; i < words.length; i++) {
@@ -155,6 +192,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     isStreaming = false;
+    streamEndedAtField.value = Date.now();
     interruptBtn.disabled = true;
     interruptBtn.style.display = "none";
     interruptedField.value = isInterrupted ? "True" : "False";

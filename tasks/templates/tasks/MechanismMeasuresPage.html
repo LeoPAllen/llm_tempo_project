@@ -13,6 +13,10 @@
 {{ formfield 'cognitive_trust' }}
 {{ formfield 'affective_trust' }}
 {{ formfield 'confidence_in_ai' }}
+{% if is_study_1 %}
+{{ formfield 'cognitive_tax' }}
+{{ formfield 'ai_effort' }}
+{% endif %}
 
 {{ next_button }}
 </div>

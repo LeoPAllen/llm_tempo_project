@@ -1,6 +1,20 @@
 from shared.timed_page import TimedPage
 
 
+BASE_POST_SURVEY_FIELDS = [
+    'overall_ai_future_use',
+    'overall_ai_thoughtful',
+    'trust_automation_confident',
+    'trust_automation_reliable',
+    'trust_automation_trust',
+    'need_for_cognition_effort',
+    'need_for_cognition_enjoy',
+    'need_for_cognition_avoid',
+    'prior_llm_used_before',
+    'prior_llm_accuracy',
+]
+
+
 class ManipulationCheckPage(TimedPage):
     template_name = 'post_tasks_measures/ManipulationCheckPage.html'
     form_model = 'player'
@@ -13,18 +27,9 @@ class ManipulationCheckPage(TimedPage):
 class PostSurveyPage(TimedPage):
     template_name = 'post_tasks_measures/PostSurveyPage.html'
     form_model = 'player'
-    form_fields = [
-        'overall_ai_future_use',
-        'overall_ai_thoughtful',
-        'trust_automation_confident',
-        'trust_automation_reliable',
-        'trust_automation_trust',
-        'need_for_cognition_effort',
-        'need_for_cognition_enjoy',
-        'need_for_cognition_avoid',
-        'prior_llm_used_before',
-        'prior_llm_accuracy',
-    ]
+
+    def get_form_fields(self):
+        return BASE_POST_SURVEY_FIELDS[:]
 
 
 class DemographicsPage(TimedPage):

@@ -4,11 +4,19 @@
 
 <h3 class="study-title">Welcome to Our Study</h3>
 
+{% if total_tasks == 1 %}
+<p>Thank you for your interest in this research. In this study, you will work through one decision-making task. You will have access to an AI assistant that can provide advice.</p>
+{% else %}
 <p>Thank you for your interest in this research. In this study, you will work through a series of decision-making tasks. For each task, you will have access to an AI assistant that can provide advice.</p>
+{% endif %}
 
-<p>The study takes approximately <strong>8 minutes</strong> to complete.</p>
+<p>The study takes approximately <strong>{{ estimated_minutes }} {{ estimated_minutes_label }}</strong> to complete.</p>
 
+{% if total_tasks == 1 %}
+<p><strong>The task does not have a right or wrong answer; we are interested in how you approach the decision.</strong></p>
+{% else %}
 <p><strong>None of the tasks have a right or wrong answer; we are interested in how you approach the decisions.</strong></p>
+{% endif %}
 
 <div class="study-panel">
 <p><strong>A few things to know before we begin:</strong></p>

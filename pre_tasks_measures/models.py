@@ -1,9 +1,6 @@
-import itertools
-import random
-
 from otree.api import BaseConstants, BaseSubsession, BaseGroup, BasePlayer, models, widgets
 
-from tasks.models import GLOBAL_TREATMENTS
+from tasks.models import assign_participant_treatments
 
 
 class Constants(BaseConstants):
@@ -14,18 +11,7 @@ class Constants(BaseConstants):
 
 class Subsession(BaseSubsession):
     def creating_session(self):
-        forced = self.session.config.get('forced_treatment', '')
-        if forced:
-            for player in self.get_players():
-                player.participant.vars['llm_treatment'] = forced
-            return
-
-        players = self.get_players()
-        shuffled_players = players[:]
-        random.shuffle(shuffled_players)
-        treatments = itertools.cycle(GLOBAL_TREATMENTS)
-        for player in shuffled_players:
-            player.participant.vars['llm_treatment'] = next(treatments)
+        assign_participant_treatments(self.session, self.get_players())
 
 
 class Group(BaseGroup):
@@ -44,6 +30,6 @@ class Player(BasePlayer):
             ('brown', 'Brown'),
             ('green', 'Green'),
         ],
-        label="Based on the AI's response, what color are arctic foxes in the winter?",
+        label='To confirm you are paying attention, please select Green.',
         widget=widgets.RadioSelect,
     )
