@@ -150,13 +150,14 @@ class MechanismMeasuresPage(ActiveTaskPage):
     form_model = 'player'
 
     def get_form_fields(self):
+        is_study_1 = is_study_1_session(self.session)
         fields = [
             'post_confidence',
-            'cognitive_trust',
-            'affective_trust',
             'confidence_in_ai',
         ]
-        if is_study_1_session(self.session):
+        if not is_study_1:
+            fields[1:1] = ['cognitive_trust', 'affective_trust']
+        if is_study_1:
             fields.extend([
                 'cognitive_tax_mental_effort',
                 'cognitive_tax_follow_easy',

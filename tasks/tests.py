@@ -80,11 +80,11 @@ class PlayerBot(Bot):
         yield pages.RevisedAnswerPage, dict(post_numeric_response=post_response)
         mechanism_data = dict(
             post_confidence=4,
-            cognitive_trust=4,
-            affective_trust=4,
             confidence_in_ai=4,
         )
         if is_study_1_session(self.session):
+            expect("The AI's recommendation was logical and well-reasoned.", 'not in', self.html)
+            expect("I felt comfortable following the AI's recommendation.", 'not in', self.html)
             expect('How much mental effort was required to understand the AI response?', 'in', self.html)
             expect('How easy was it to follow the AI response?', 'in', self.html)
             expect('How much mental fatigue did you feel after reading the AI response?', 'in', self.html)
@@ -103,5 +103,10 @@ class PlayerBot(Bot):
                 labor_illusion_effort=4,
                 labor_illusion_expertise=4,
                 labor_illusion_thoroughness=4,
+            )
+        else:
+            mechanism_data.update(
+                cognitive_trust=4,
+                affective_trust=4,
             )
         yield pages.MechanismMeasuresPage, mechanism_data
