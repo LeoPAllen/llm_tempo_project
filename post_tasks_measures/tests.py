@@ -25,6 +25,12 @@ class PlayerBot(Bot):
             prior_llm_accuracy=4,
         )
         if is_study_1_session(self.session):
+            expect('How much mental effort was required to understand the AI response?', 'not in', self.html)
+            expect('How easy was it to follow the AI response?', 'not in', self.html)
+            expect('How much mental fatigue did you feel after reading the AI response?', 'not in', self.html)
+            expect('How much effort do you think the AI exerted on your behalf?', 'not in', self.html)
+            expect('How much expertise do you think the AI has?', 'not in', self.html)
+            expect('How thorough was the AI in generating the best response for you?', 'not in', self.html)
             expect('Evaluating the AI recommendation required a lot of mental effort.', 'not in', self.html)
             expect('The AI seemed to put effort into generating the recommendation.', 'not in', self.html)
             expect('TODO Study 1 cognitive tax item', 'not in', self.html)

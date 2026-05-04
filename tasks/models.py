@@ -287,14 +287,34 @@ class Player(BasePlayer):
         label='The AI gave good advice on this task.',
         widget=widgets.RadioSelectHorizontal,
     )
-    cognitive_tax = models.IntegerField(
+    cognitive_tax_mental_effort = models.IntegerField(
         choices=LIKERT_7,
-        label='Evaluating the AI recommendation required a lot of mental effort.',
+        label='How much mental effort was required to understand the AI response?',
         widget=widgets.RadioSelectHorizontal,
     )
-    ai_effort = models.IntegerField(
+    cognitive_tax_follow_easy = models.IntegerField(
         choices=LIKERT_7,
-        label='The AI seemed to put effort into generating the recommendation.',
+        label='How easy was it to follow the AI response?',
+        widget=widgets.RadioSelectHorizontal,
+    )
+    cognitive_tax_mental_fatigue = models.IntegerField(
+        choices=LIKERT_7,
+        label='How much mental fatigue did you feel after reading the AI response?',
+        widget=widgets.RadioSelectHorizontal,
+    )
+    labor_illusion_effort = models.IntegerField(
+        choices=LIKERT_7,
+        label='How much effort do you think the AI exerted on your behalf?',
+        widget=widgets.RadioSelectHorizontal,
+    )
+    labor_illusion_expertise = models.IntegerField(
+        choices=LIKERT_7,
+        label='How much expertise do you think the AI has?',
+        widget=widgets.RadioSelectHorizontal,
+    )
+    labor_illusion_thoroughness = models.IntegerField(
+        choices=LIKERT_7,
+        label='How thorough was the AI in generating the best response for you?',
         widget=widgets.RadioSelectHorizontal,
     )
     post_confidence = models.IntegerField(

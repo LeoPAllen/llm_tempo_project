@@ -7,15 +7,19 @@
 <div class="debug-badge">Debug only: treatment = {{ debug_treatment }}</div>
 {% endif %}
 
-<p>Thinking about your <strong>final decision</strong> and the AI's advice you just received, please rate the following statements.</p>
+<p>Thinking about your <strong>final decision</strong> and the AI's advice you just received, please respond to the following items.</p>
 
 {{ formfield 'post_confidence' }}
 {{ formfield 'cognitive_trust' }}
 {{ formfield 'affective_trust' }}
 {{ formfield 'confidence_in_ai' }}
 {% if is_study_1 %}
-{{ formfield 'cognitive_tax' }}
-{{ formfield 'ai_effort' }}
+{{ formfield 'cognitive_tax_mental_effort' }}
+{{ formfield 'cognitive_tax_follow_easy' }}
+{{ formfield 'cognitive_tax_mental_fatigue' }}
+{{ formfield 'labor_illusion_effort' }}
+{{ formfield 'labor_illusion_expertise' }}
+{{ formfield 'labor_illusion_thoroughness' }}
 {% endif %}
 
 {{ next_button }}

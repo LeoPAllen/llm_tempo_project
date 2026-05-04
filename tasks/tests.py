@@ -85,14 +85,23 @@ class PlayerBot(Bot):
             confidence_in_ai=4,
         )
         if is_study_1_session(self.session):
-            expect('Evaluating the AI recommendation required a lot of mental effort.', 'in', self.html)
-            expect('The AI seemed to put effort into generating the recommendation.', 'in', self.html)
+            expect('How much mental effort was required to understand the AI response?', 'in', self.html)
+            expect('How easy was it to follow the AI response?', 'in', self.html)
+            expect('How much mental fatigue did you feel after reading the AI response?', 'in', self.html)
+            expect('How much effort do you think the AI exerted on your behalf?', 'in', self.html)
+            expect('How much expertise do you think the AI has?', 'in', self.html)
+            expect('How thorough was the AI in generating the best response for you?', 'in', self.html)
+            expect('Evaluating the AI recommendation required a lot of mental effort.', 'not in', self.html)
+            expect('The AI seemed to put effort into generating the recommendation.', 'not in', self.html)
             expect('TODO Study 1 cognitive tax item', 'not in', self.html)
             expect('TODO Study 1 perceived AI effort item', 'not in', self.html)
             expect('TODO Study 1 labor illusion item', 'not in', self.html)
-            expect('labor_illusion', 'not in', self.html)
             mechanism_data.update(
-                cognitive_tax=4,
-                ai_effort=4,
+                cognitive_tax_mental_effort=4,
+                cognitive_tax_follow_easy=4,
+                cognitive_tax_mental_fatigue=4,
+                labor_illusion_effort=4,
+                labor_illusion_expertise=4,
+                labor_illusion_thoroughness=4,
             )
         yield pages.MechanismMeasuresPage, mechanism_data

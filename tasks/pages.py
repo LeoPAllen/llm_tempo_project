@@ -145,7 +145,7 @@ class RevisedAnswerPage(ActiveTaskPage):
 
 
 class MechanismMeasuresPage(ActiveTaskPage):
-    """Page 4: Cognitive trust, affective trust, confidence in AI"""
+    """Page 4: Task-level mechanism measures"""
     template_name = 'tasks/MechanismMeasuresPage.html'
     form_model = 'player'
 
@@ -157,7 +157,14 @@ class MechanismMeasuresPage(ActiveTaskPage):
             'confidence_in_ai',
         ]
         if is_study_1_session(self.session):
-            fields.extend(['cognitive_tax', 'ai_effort'])
+            fields.extend([
+                'cognitive_tax_mental_effort',
+                'cognitive_tax_follow_easy',
+                'cognitive_tax_mental_fatigue',
+                'labor_illusion_effort',
+                'labor_illusion_expertise',
+                'labor_illusion_thoroughness',
+            ])
         return fields
 
     def vars_for_template(self):
