@@ -159,6 +159,8 @@ class MechanismMeasuresPage(ActiveTaskPage):
             fields[1:1] = ['cognitive_trust', 'affective_trust']
         if is_study_1:
             fields.extend([
+                'overall_ai_future_use',
+                'overall_ai_thoughtful',
                 'cognitive_tax_mental_effort',
                 'cognitive_tax_follow_easy',
                 'cognitive_tax_mental_fatigue',

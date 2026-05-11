@@ -287,6 +287,16 @@ class Player(BasePlayer):
         label='The AI gave good advice on this task.',
         widget=widgets.RadioSelectHorizontal,
     )
+    overall_ai_future_use = models.IntegerField(
+        choices=LIKERT_7,
+        label='I would use a similar AI again for decisions like this.',
+        widget=widgets.RadioSelectHorizontal,
+    )
+    overall_ai_thoughtful = models.IntegerField(
+        choices=LIKERT_7,
+        label='The AI seemed to think carefully before responding.',
+        widget=widgets.RadioSelectHorizontal,
+    )
     cognitive_tax_mental_effort = models.IntegerField(
         choices=LIKERT_7,
         label='How much mental effort was required to understand the AI response?',

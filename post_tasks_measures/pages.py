@@ -1,9 +1,13 @@
 from shared.timed_page import TimedPage
+from tasks.models import is_study_1_session
 
 
-BASE_POST_SURVEY_FIELDS = [
+OVERALL_AI_FIELDS = [
     'overall_ai_future_use',
     'overall_ai_thoughtful',
+]
+
+BASE_POST_SURVEY_FIELDS = [
     'trust_automation_confident',
     'trust_automation_reliable',
     'trust_automation_trust',
@@ -29,7 +33,13 @@ class PostSurveyPage(TimedPage):
     form_model = 'player'
 
     def get_form_fields(self):
-        return BASE_POST_SURVEY_FIELDS[:]
+        fields = BASE_POST_SURVEY_FIELDS[:]
+        if not is_study_1_session(self.session):
+            fields = OVERALL_AI_FIELDS + fields
+        return fields
+
+    def vars_for_template(self):
+        return dict(is_study_1=is_study_1_session(self.session))
 
 
 class DemographicsPage(TimedPage):

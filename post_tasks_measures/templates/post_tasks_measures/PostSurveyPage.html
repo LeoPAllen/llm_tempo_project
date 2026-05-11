@@ -4,11 +4,13 @@
 {% block content %}
 <div class="study-page">
 
+{% if not is_study_1 %}
 <p><strong>Your experience with the AI in this study</strong></p>
 {{ formfield 'overall_ai_future_use' }}
 {{ formfield 'overall_ai_thoughtful' }}
 
 <hr style="margin: 1.5rem 0;">
+{% endif %}
 
 <p><strong>Your general views on AI</strong></p>
 {{ formfield 'trust_automation_confident' }}

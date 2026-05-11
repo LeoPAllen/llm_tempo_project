@@ -13,8 +13,6 @@ class PlayerBot(Bot):
         )
 
         post_survey_data = dict(
-            overall_ai_future_use=4,
-            overall_ai_thoughtful=4,
             trust_automation_confident=4,
             trust_automation_reliable=4,
             trust_automation_trust=4,
@@ -25,6 +23,8 @@ class PlayerBot(Bot):
             prior_llm_accuracy=4,
         )
         if is_study_1_session(self.session):
+            expect('I would use a similar AI again for decisions like this.', 'not in', self.html)
+            expect('The AI seemed to think carefully before responding.', 'not in', self.html)
             expect('How much mental effort was required to understand the AI response?', 'not in', self.html)
             expect('How easy was it to follow the AI response?', 'not in', self.html)
             expect('How much mental fatigue did you feel after reading the AI response?', 'not in', self.html)
@@ -39,6 +39,11 @@ class PlayerBot(Bot):
             expect('labor_illusion', 'not in', self.html)
             expect('cognitive tax', 'not in', self.html)
             expect('AI effort', 'not in', self.html)
+        else:
+            post_survey_data.update(
+                overall_ai_future_use=4,
+                overall_ai_thoughtful=4,
+            )
         yield pages.PostSurveyPage, post_survey_data
 
         yield pages.DemographicsPage, dict(

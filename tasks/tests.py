@@ -85,6 +85,8 @@ class PlayerBot(Bot):
         if is_study_1_session(self.session):
             expect("The AI's recommendation was logical and well-reasoned.", 'not in', self.html)
             expect("I felt comfortable following the AI's recommendation.", 'not in', self.html)
+            expect('I would use a similar AI again for decisions like this.', 'in', self.html)
+            expect('The AI seemed to think carefully before responding.', 'in', self.html)
             expect('How much mental effort was required to understand the AI response?', 'in', self.html)
             expect('How easy was it to follow the AI response?', 'in', self.html)
             expect('How much mental fatigue did you feel after reading the AI response?', 'in', self.html)
@@ -97,6 +99,8 @@ class PlayerBot(Bot):
             expect('TODO Study 1 perceived AI effort item', 'not in', self.html)
             expect('TODO Study 1 labor illusion item', 'not in', self.html)
             mechanism_data.update(
+                overall_ai_future_use=4,
+                overall_ai_thoughtful=4,
                 cognitive_tax_mental_effort=4,
                 cognitive_tax_follow_easy=4,
                 cognitive_tax_mental_fatigue=4,
