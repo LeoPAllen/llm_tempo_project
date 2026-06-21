@@ -7,7 +7,9 @@
 <div class="debug-badge">Debug only: treatment = {{ debug_treatment }}</div>
 {% endif %}
 
+{% if total_rounds > 1 %}
 <div class="study-kicker">Decision Task {{ round_number }} of {{ total_rounds }}</div>
+{% endif %}
 
 <div class="study-panel">
 <p>{{ task.intro_text }}</p>

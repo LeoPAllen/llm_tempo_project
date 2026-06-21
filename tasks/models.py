@@ -17,8 +17,9 @@ STUDY_1_ID = 'study_1'
 STUDY_1_TASK_IDS = ['dictator']
 STUDY_1_ADVICE_AMOUNTS = [15, 25, 35, 45]
 STUDY_1_ADVICE_TEXT_TEMPLATE = (
-    'I recommend giving {amount} USD. This balances fairness with self-interest, '
-    'and is in line with what would be considered reasonable.'
+    "I've looked carefully at this type of decision, and based on my analysis, "
+    "I recommend giving {amount} USD. This is the amount I'd suggest after "
+    'weighing the considerations involved.'
 )
 LIKERT_7 = [(i, str(i)) for i in range(1, 8)]
 

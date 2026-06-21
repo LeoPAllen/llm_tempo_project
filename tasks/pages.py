@@ -126,7 +126,7 @@ class RevisedAnswerPage(ActiveTaskPage):
     form_model = 'player'
 
     def get_form_fields(self):
-        return ['post_numeric_response']
+        return ['post_numeric_response', 'post_confidence']
 
     def vars_for_template(self):
         task = current_task(self.player)
@@ -152,7 +152,6 @@ class MechanismMeasuresPage(ActiveTaskPage):
     def get_form_fields(self):
         is_study_1 = is_study_1_session(self.session)
         fields = [
-            'post_confidence',
             'confidence_in_ai',
         ]
         if not is_study_1:

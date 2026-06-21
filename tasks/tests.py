@@ -77,9 +77,11 @@ class PlayerBot(Bot):
             expect(self.player.advice_elapsed_load_to_next_ms, 3200)
             expect(self.player.advice_elapsed_stream_end_to_next_ms, 2000)
 
-        yield pages.RevisedAnswerPage, dict(post_numeric_response=post_response)
-        mechanism_data = dict(
+        yield pages.RevisedAnswerPage, dict(
+            post_numeric_response=post_response,
             post_confidence=4,
+        )
+        mechanism_data = dict(
             confidence_in_ai=4,
         )
         if is_study_1_session(self.session):

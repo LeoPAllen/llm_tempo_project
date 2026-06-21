@@ -202,7 +202,7 @@ Per-task AI prompts and outputs:
 
   DICTATOR GAME
   - Prompt: "I have 100 USD to split between myself and another person. They must accept whatever I give. How much should I give?"
-  - Output: "I recommend giving 30 USD. This balances fairness with self-interest, and is in line with what most people consider reasonable."
+  - Output: "I've looked carefully at this type of decision, and based on my analysis, I recommend giving N USD. This is the amount I'd suggest after weighing the considerations involved."
 
   TIME PREFERENCE
   - Prompt: "I can receive 75 USD today or wait 10 days for a larger amount. What is the minimum I should wait for?"
@@ -226,9 +226,11 @@ Participant-facing content
 - Instruction: "Now that you have seen the AI's advice, you may update your answer or keep it the same."
 - Shows task scenario again
 - Same response prompt and range as initial answer
+- Final-answer confidence appears after the participant enters their revised answer
 
 Implementation notes
 - post_numeric_response recorded
+- post_confidence recorded
 - WOA computed in analysis: |post - pre| / |llm_recommendation - pre|
 
 
@@ -237,10 +239,9 @@ Implementation notes
 Participant-facing content
 - Instruction: "Thinking about your final decision and the AI's advice you just received, please rate the following statements."
 - Items (all 7-point Likert):
-  1. "I am confident in my final answer." (post_confidence)
-  2. "The AI's recommendation was logical and well-reasoned." (cognitive_trust)
-  3. "I felt comfortable following the AI's recommendation." (affective_trust)
-  4. "The AI gave good advice on this task." (confidence_in_ai)
+  1. "The AI's recommendation was logical and well-reasoned." (cognitive_trust)
+  2. "I felt comfortable following the AI's recommendation." (affective_trust)
+  3. "The AI gave good advice on this task." (confidence_in_ai)
 
 
 ================================================================================

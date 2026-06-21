@@ -22,6 +22,26 @@
   <span class="range-hint">({{ task.response_range }})</span>
 </div>
 
+<div id="confidence-section" style="display: none;">
+{{ formfield 'post_confidence' }}
+</div>
+
 {{ next_button }}
 </div>
+{% endblock %}
+
+{% block global_scripts %}
+{{ super() }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var input = document.querySelector('input[name="post_numeric_response"]');
+  var confidenceSection = document.getElementById("confidence-section");
+
+  input.addEventListener("input", function () {
+    if (input.value.trim() !== "") {
+      confidenceSection.style.display = "block";
+    }
+  });
+});
+</script>
 {% endblock %}
