@@ -55,9 +55,9 @@ class PlayerBot(Bot):
                 )
                 expect(observed_cells, expected_cells)
 
-        expect('To confirm you are paying attention, please select Green.', 'in', self.html)
+        expect("Based on the AI's response, what color are arctic foxes in the winter?", 'in', self.html)
+        expect('To confirm you are paying attention, please select Green.', 'not in', self.html)
         expect('arctic fox use camouflage', 'in', self.html)
-        expect("Based on the AI's response", 'not in', self.html)
         yield pages.PracticePage, dict(
             practice_io_history='[]',
             practice_attention_check='green',

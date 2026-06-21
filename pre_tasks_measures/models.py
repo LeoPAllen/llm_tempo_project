@@ -30,6 +30,6 @@ class Player(BasePlayer):
             ('brown', 'Brown'),
             ('green', 'Green'),
         ],
-        label='To confirm you are paying attention, please select Green.',
+        label="Based on the AI's response, what color are arctic foxes in the winter?",
         widget=widgets.RadioSelect,
     )

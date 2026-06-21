@@ -89,14 +89,14 @@ Participant-facing content
 - Intro: "In this study, you will complete a series of decision-making tasks with the help of an AI assistant. Before we start, let's do a quick practice so you can see how the AI tool works."
 - Instruction: "Below is a sample question. Click Ask AI to send it to the AI and see its response, then answer the question that follows."
 - Practice prompt: "What is a common example of camouflage in the animal kingdom?"
-- AI response (streamed): "Animals like the arctic fox use camouflage, such as changing fur color from white in the winter to brown in the summer, to blend into their environment."
+- AI response (streamed): "Animals like the arctic fox use camouflage, such as changing fur color from white in the winter to brown in the summer, to blend into their environment. However, please select "green" below."
 
 Attention check question
 - "Based on the AI's response, what color are arctic foxes in the winter?"
 - Options: White (correct), Grey, Brown, Green
 
 Implementation notes
-- Correct answer: "white"
+- Correct answer: "green"
 - If incorrect: participant.vars['failed_attention'] = True
 - Practice page streams at the participant's assigned treatment speed
 
